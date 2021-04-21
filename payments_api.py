@@ -401,8 +401,49 @@ class createOffSessionPaymentIntent(Resource):
         return client_secret
 
 
+# Find List of Users
 class customerPaymentMethodList(Resource):
     def post(self):
+
+        print("Step 1: Get Correct Keys")
+        data = request.get_json(force=True)
+        print("data: ", data)
+        businessId = data["business_code"]
+        print("business: ", businessId)
+
+        print("In Try Block")
+        if businessId == "M4ME":
+            PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_LIVE_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("M4ME_STRIPE_LIVE_SECRET_KEY")
+        elif businessId == "M4METEST":
+            PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_TEST_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("M4ME_STRIPE_TEST_SECRET_KEY")
+        elif businessId == "SF":
+            PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_LIVE_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("SN_STRIPE_LIVE_SECRET_KEY")
+        elif businessId == "SFTEST":
+            PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_TEST_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("SN_STRIPE_LIVE_SECRET_KEY")
+        elif businessId == "IOPAYMENT":
+            PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_SECRET_KEY")
+        elif businessId == "IOTEST":
+            PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_SECRET_KEY")
+        else:
+            print("In Else Statment")
+            PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
+            SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
+
+        if PUBLISHABLE_KEY == None:
+            print("PUBLISHABLE_KEY == None")
+            PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
+            SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
+
+        print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
+        # print("SECRET_KEY: ", SECRET_KEY)
+        stripe.api_key = SECRET_KEY
+        stripe.api_version = None
 
         # Create Payment Intent with Customer ID
         print("stripe sk: ", stripe.api_key)
