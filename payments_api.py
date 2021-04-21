@@ -61,25 +61,49 @@ class getCorrectKeys(Resource):
         businessId = data["business_code"]
         print("business: ", businessId)
 
+        # FOR LOCAL TESTING
+        # print("In Try Block")
+        # if businessId == "M4ME":
+        #     PUBLISHABLE_KEY = "M4ME_STRIPE_LIVE_PUBLISHABLE_KEY"
+        #     SECRET_KEY = "M4ME_STRIPE_LIVE_SECRET_KEY"
+        # elif businessId == "M4METEST":
+        #     PUBLISHABLE_KEY = "M4ME_STRIPE_TEST_PUBLISHABLE_KEY"
+        #     SECRET_KEY = "M4ME_STRIPE_TEST_SECRET_KEY"
+        # elif businessId == "SF":
+        #     PUBLISHABLE_KEY = "SN_STRIPE_LIVE_PUBLISHABLE_KEY"
+        #     SECRET_KEY = "SN_STRIPE_LIVE_SECRET_KEY"
+        # elif businessId == "SFTEST":
+        #     PUBLISHABLE_KEY = "SN_STRIPE_TEST_PUBLISHABLE_KEY"
+        #     SECRET_KEY = "SN_STRIPE_LIVE_SECRET_KEY"
+        # elif businessId == "IOPAYMENT":
+        #     PUBLISHABLE_KEY = "IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY"
+        #     SECRET_KEY = "IOPAYMENTS_STRIPE_LIVE_SECRET_KEY"
+        # elif businessId == "IOTEST":
+        #     PUBLISHABLE_KEY = "IOPAYMENTS_STRIPE_TEST_PUBLISHABLE_KEY"
+        #     SECRET_KEY = "IOPAYMENTS_STRIPE_TEST_SECRET_KEY"
+        # else:
+        #     PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
+        #     SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
+
         print("In Try Block")
         if businessId == "M4ME":
-            PUBLISHABLE_KEY = "M4ME_STRIPE_LIVE_PUBLISHABLE_KEY"
-            SECRET_KEY = "M4ME_STRIPE_LIVE_SECRET_KEY"
+            PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_LIVE_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("M4ME_STRIPE_LIVE_SECRET_KEY")
         elif businessId == "M4METEST":
-            PUBLISHABLE_KEY = "M4ME_STRIPE_TEST_PUBLISHABLE_KEY"
-            SECRET_KEY = "M4ME_STRIPE_TEST_SECRET_KEY"
+            PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_TEST_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("M4ME_STRIPE_TEST_SECRET_KEY")
         elif businessId == "SF":
-            PUBLISHABLE_KEY = "SN_STRIPE_LIVE_PUBLISHABLE_KEY"
-            SECRET_KEY = "SN_STRIPE_LIVE_SECRET_KEY"
+            PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_LIVE_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("SN_STRIPE_LIVE_SECRET_KEY")
         elif businessId == "SFTEST":
-            PUBLISHABLE_KEY = "SN_STRIPE_TEST_PUBLISHABLE_KEY"
-            SECRET_KEY = "SN_STRIPE_LIVE_SECRET_KEY"
+            PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_TEST_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("SN_STRIPE_LIVE_SECRET_KEY")
         elif businessId == "IOPAYMENT":
-            PUBLISHABLE_KEY = "IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY"
-            SECRET_KEY = "IOPAYMENTS_STRIPE_LIVE_SECRET_KEY"
+            PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_SECRET_KEY")
         elif businessId == "IOTEST":
-            PUBLISHABLE_KEY = "IOPAYMENTS_STRIPE_TEST_PUBLISHABLE_KEY"
-            SECRET_KEY = "IOPAYMENTS_STRIPE_TEST_SECRET_KEY"
+            PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_SECRET_KEY")
         else:
             PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
             SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
@@ -211,8 +235,8 @@ class createPaymentIntent(Resource):
             PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
             SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
 
-        print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
-        print("SECRET_KEY: ", SECRET_KEY)
+        # print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
+        # print("SECRET_KEY: ", SECRET_KEY)
         stripe.api_key = SECRET_KEY
         stripe.api_version = None
 
