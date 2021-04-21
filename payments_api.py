@@ -28,11 +28,11 @@ stripe.api_version = os.getenv("STRIPE_API_VERSION")
 # See your keys here: https://dashboard.stripe.com/apikeys
 # use below for local testing
 
-# IO Keys
-# PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
-# SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
-# stripe.api_key = SECRET_KEY
-# stripe.api_version = None
+# IOPAYMENTS Test Keys (Needed for any local host test and act as default in case Key Logic fails)
+PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
+SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
+stripe.api_key = SECRET_KEY
+stripe.api_version = None
 
 # static_dir = str(os.path.abspath(os.path.join(__file__, "..", os.getenv("STATIC_DIR"))))
 # app = Flask(
@@ -54,7 +54,7 @@ api = Api(app)
 
 class getCorrectKeys(Resource):
     def post(self):
-        # Customer UID sent in from frontend
+        # Business Code sent in from frontend
         print("Step 1: Get Correct Keys")
         data = request.get_json(force=True)
         print("data: ", data)
@@ -122,6 +122,9 @@ class createCustomerOnly(Resource):
 
         # Create Payment Intent
         # Create customer.  Need this step to save CC info
+        # Returns a Customer ID Created by Stripe
+        print("Step 2")
+        print("stripe PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
         customer = stripe.Customer.create()
         print("customer: ", customer)
         customerId = customer.id
@@ -327,6 +330,7 @@ class createOffSessionPaymentIntent(Resource):
     def post(self):
 
         # Create Payment Intent with Customer ID
+        print("Step 6")
         print("stripe sk: ", stripe.api_key)
         data = request.get_json(force=True)
         print("data: ", data)
