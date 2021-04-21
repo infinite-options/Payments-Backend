@@ -12,6 +12,7 @@ Python 3.6 or newer required.
 import stripe
 import json
 import os
+import requests
 
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_restful import Resource, Api
@@ -238,8 +239,16 @@ class createPaymentIntent(Resource):
             PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
             SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
 
-        # print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
-        # print("SECRET_KEY: ", SECRET_KEY)
+        if PUBLISHABLE_KEY == None:
+            PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
+            SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
+
+        # if PUBLISHABLE_KEY == None:
+        #     PUBLISHABLE_KEY = "pk_test_51HyqrgLMju5RPMEv5ai8f5nU87HWQFNXOZmLTWLIrqlNFMPjrboGfQsj4FDUvaHRAhxyRBQrfhmXC3kMnxEYRiKO00m4W3jj5a"
+        #     SECRET_KEY = "sk_test_51HyqrgLMju5RPMEvowxoZHOI9LjFSxI9X3KPsOM7KVA4pxtJqlEwEkjLJ3GCL56xpIQuVImkSwJQ5TqpGkl299bo00yD1lTRNK"
+
+        print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
+        print("SECRET_KEY: ", SECRET_KEY)
         stripe.api_key = SECRET_KEY
         stripe.api_version = None
 
