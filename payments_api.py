@@ -236,19 +236,17 @@ class createPaymentIntent(Resource):
             PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_SECRET_KEY")
         else:
+            print("In Else Statment")
             PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
             SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
 
         if PUBLISHABLE_KEY == None:
+            print("PUBLISHABLE_KEY == None")
             PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
             SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
 
-        # if PUBLISHABLE_KEY == None:
-        #     PUBLISHABLE_KEY = "pk_test_51HyqrgLMju5RPMEv5ai8f5nU87HWQFNXOZmLTWLIrqlNFMPjrboGfQsj4FDUvaHRAhxyRBQrfhmXC3kMnxEYRiKO00m4W3jj5a"
-        #     SECRET_KEY = "sk_test_51HyqrgLMju5RPMEvowxoZHOI9LjFSxI9X3KPsOM7KVA4pxtJqlEwEkjLJ3GCL56xpIQuVImkSwJQ5TqpGkl299bo00yD1lTRNK"
-
         print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
-        print("SECRET_KEY: ", SECRET_KEY)
+        # print("SECRET_KEY: ", SECRET_KEY)
         stripe.api_key = SECRET_KEY
         stripe.api_version = None
 
@@ -282,15 +280,15 @@ class createPaymentIntent(Resource):
         # Step 3
         # Create Payment Intent with Customer ID
         print("Step 3")
-        print("stripe sk: ", stripe.api_key)
+        # print("stripe sk: ", stripe.api_key)
 
-        paras = {
-            "item_uid": "320-000050",
-            "num_issues": "2",
-            "customer_uid": "100-000125",
-            "tip": "2",
-            "ambassador": "",
-        }
+        # paras = {
+        #     "item_uid": "320-000050",
+        #     "num_issues": "2",
+        #     "customer_uid": "100-000125",
+        #     "tip": "2",
+        #     "ambassador": "",
+        # }
         params = {
             "item_uid": data["item_uid"],
             "num_issues": data["num_deliveries"],
@@ -298,12 +296,47 @@ class createPaymentIntent(Resource):
             "tip": data["payment_summary"]["tip"],
             "ambassador": "",
         }
-        response = requests.post(
-            url="https://ht56vci4v9.execute-api.us-west-1.amazonaws.com/dev/api/v2/order_amount_calculation",
-            json=params,
-        )
-        print("total amount is: ", response.json())
-        total_amount = float(response.json())
+        print("params: ", params)
+        print(params["item_uid"])
+        # print(params.json())
+        # print(params.item_uid)
+
+        print("In IF Block")
+        print(businessId)
+        if businessId == "M4ME" or businessId == "M4METEST":
+            response = requests.post(
+                url="https://ht56vci4v9.execute-api.us-west-1.amazonaws.com/dev/api/v2/order_amount_calculation",
+                json=params,
+            )
+            print("total amount is: ", response.json())
+            total_amount = float(response.json())
+        elif businessId == "SF" or businessId == "SFTEST":
+            response = requests.post(
+                url="https://ht56vci4v9.execute-api.us-west-1.amazonaws.com/dev/api/v2/order_amount_calculation",
+                json=params,
+            )
+            print("total amount is: ", response.json())
+            total_amount = float(response.json())
+        elif businessId == "IOPAYMENT" or businessId == "IOTEST":
+            response = "1017"
+            print("total amount is: ", response)
+            total_amount = float(response)
+
+        else:
+            response = "1023"
+            print("total amount is: ", response)
+            total_amount = float(response)
+
+        # response = "2100"
+        # response = 2100
+        # response = {"": "2100"}
+
+        # response = requests.post(
+        #     url="https://ht56vci4v9.execute-api.us-west-1.amazonaws.com/dev/api/v2/order_amount_calculation",
+        #     json=params,
+        # )
+        # print("total amount is: ", response.json())
+        # total_amount = float(response.json())
 
         # data = request.get_json(force=True)
         # print("data: ", data)
