@@ -222,11 +222,13 @@ class createPaymentIntent(Resource):
         paymentIntent = createPaymentIntentOnly.post(self, customer_uid, charge_amount)
         print(paymentIntent)
 
-        return {
-            "PK": keys["PUBLISHABLE_KEY"],
-            "NewCustomer": newCustomer,
-            "pi": paymentIntent,
-        }
+        # return {
+        #     "PK": keys["PUBLISHABLE_KEY"],
+        #     "NewCustomer": newCustomer,
+        #     "pi": paymentIntent,
+        # }
+
+        return paymentIntent
 
 
 # Define API routes
