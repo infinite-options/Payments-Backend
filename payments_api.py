@@ -233,7 +233,7 @@ class createPaymentIntent(Resource):
 # NEW BASE URL:  https://huo8rhh76i.execute-api.us-west-1.amazonaws.com/dev/
 api.add_resource(getCorrectKeys, "/api/v2/getCorrectKeys/<string:businessId>")
 api.add_resource(createNewCustomer, "/api/v2/createNewCustomer/<string:customer_uid>")
-api.add_resource(createCustomerOnly, "/api/v2/createCustomerOnly<string:customer_uid>")
+# api.add_resource(createCustomerOnly, "/api/v2/createCustomerOnly<string:customer_uid>")
 api.add_resource(createPaymentIntent, "/api/v2/createPaymentIntent")
 
 
