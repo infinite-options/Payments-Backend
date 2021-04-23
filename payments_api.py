@@ -321,7 +321,7 @@ class retrieveStripeCharge(Resource):
         print("\nRetrieve Payment Intent Info")
         # retrieveInfo = stripe.PaymentIntent.retrieve("pi_1IjEA3LMju5RPMEvKBUwxxhJ") - for M4ME
         # retrieveInfo = stripe.PaymentIntent.retrieve("pi_1Ii1DOGQZnKn7zmSWXJHNS8F")
-        retrieveInfo = stripe.PaymentIntent.retrieve("pi_1IjI2VGQZnKn7zmSYhAlSEAY")
+        retrieveInfo = stripe.PaymentIntent.retrieve("pi_1IjIVyLMju5RPMEvXlz2JalH")
         print("\nPayment Intent: ", retrieveInfo.id)
         print("Payment Intent with Secret: ", retrieveInfo.client_secret)
         print("Charge ID: ", retrieveInfo.charges.data[0].id)
