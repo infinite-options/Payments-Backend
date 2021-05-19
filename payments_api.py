@@ -350,6 +350,7 @@ class refund(Resource):
         customer_uid = data["customer_uid"]
         businessId = data["business_code"]
         refund_amount = data["refund_amount"]
+        charge_id = data["charge_id"]
         # charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
         print("customer: ", customer_uid)
         print("business: ", businessId)
@@ -366,7 +367,7 @@ class refund(Resource):
         # Process a Refund
         print("\nProcess a Refund")
         retrieveInfo = stripe.Refund.create(
-            charge="ch_1IjICJGQZnKn7zmSzdTa8cBC", amount=refund_amount
+            charge=charge_id, amount=refund_amount
         )
         print("Stripe Refund Info: ", retrieveInfo)
 
