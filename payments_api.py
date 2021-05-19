@@ -312,20 +312,20 @@ class retrieveStripeCharge(Resource):
 
         # # Retrieve Charge ID (Typically from Mobile) - works
         # # Charge ID has a SUBSET of Payment Intent
-        # print("\nRetrieve Charge ID Info")
-        # retrieveInfo = stripe.Charge.retrieve("ch_1Ii1DPGQZnKn7zmSEmC80Hx7")
-        # print("Stripe Charge ID Info: ", retrieveInfo)
+        print("\nRetrieve Charge ID Info")
+        retrieveInfo = stripe.Charge.retrieve("ch_1Ii1DPGQZnKn7zmSEmC80Hx7")
+        print("Stripe Charge ID Info: ", retrieveInfo)
 
-        # Retrieve Payment Intent (Typically from Web or Postman) - -works
-        # Payment Intent has Everything
-        print("\nRetrieve Payment Intent Info")
-        # retrieveInfo = stripe.PaymentIntent.retrieve("pi_1IjEA3LMju5RPMEvKBUwxxhJ") - for M4ME
-        # retrieveInfo = stripe.PaymentIntent.retrieve("pi_1Ii1DOGQZnKn7zmSWXJHNS8F")
-        retrieveInfo = stripe.PaymentIntent.retrieve("pi_1IjIVyLMju5RPMEvXlz2JalH")
-        print("\nPayment Intent: ", retrieveInfo.id)
-        print("Payment Intent with Secret: ", retrieveInfo.client_secret)
-        print("Charge ID: ", retrieveInfo.charges.data[0].id)
-        print("\nStripe Payment Intent Info: ", retrieveInfo)
+        # # Retrieve Payment Intent (Typically from Web or Postman) - -works
+        # # Payment Intent has Everything
+        # print("\nRetrieve Payment Intent Info")
+        # # retrieveInfo = stripe.PaymentIntent.retrieve("pi_1IjEA3LMju5RPMEvKBUwxxhJ") - for M4ME
+        # # retrieveInfo = stripe.PaymentIntent.retrieve("pi_1Ii1DOGQZnKn7zmSWXJHNS8F")
+        # retrieveInfo = stripe.PaymentIntent.retrieve("pi_1IjIVyLMju5RPMEvXlz2JalH")
+        # print("\nPayment Intent: ", retrieveInfo.id)
+        # print("Payment Intent with Secret: ", retrieveInfo.client_secret)
+        # print("Charge ID: ", retrieveInfo.charges.data[0].id)
+        # print("\nStripe Payment Intent Info: ", retrieveInfo)
 
         # # Retrieve Payment Method - works
         # # Payment Method has customer ID, Name, Last 4 cc, Address
@@ -349,6 +349,7 @@ class refund(Resource):
         print("\ndata: ", data)
         customer_uid = data["customer_uid"]
         businessId = data["business_code"]
+        refund_amount = data["refund_amount"]
         # charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
         print("customer: ", customer_uid)
         print("business: ", businessId)
@@ -365,7 +366,7 @@ class refund(Resource):
         # Process a Refund
         print("\nProcess a Refund")
         retrieveInfo = stripe.Refund.create(
-            charge="ch_1IjICJGQZnKn7zmSzdTa8cBC", amount=2000
+            charge="ch_1IjICJGQZnKn7zmSzdTa8cBC", amount=refund_amount
         )
         print("Stripe Refund Info: ", retrieveInfo)
 
