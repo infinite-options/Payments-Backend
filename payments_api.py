@@ -45,7 +45,7 @@ class getCorrectKeys(Resource):
         print("business: ", businessId)
 
         # FOR LOCAL TESTING
-        # print("Local Testing")
+        # print("Local Testing")    
         # if businessId == "M4ME":
         #     PUBLISHABLE_KEY = "M4ME_STRIPE_LIVE_PUBLISHABLE_KEY"
         #     SECRET_KEY = "M4ME_STRIPE_LIVE_SECRET_KEY"
@@ -63,7 +63,7 @@ class getCorrectKeys(Resource):
         #     SECRET_KEY = "SN_STRIPE_LIVE_SECRET_KEY"
         # elif businessId == "SFTEST":
         #     PUBLISHABLE_KEY = "SN_STRIPE_TEST_PUBLISHABLE_KEY"
-        #     SECRET_KEY = "SN_STRIPE_LIVE_SECRET_KEY"
+        #     SECRET_KEY = "SN_STRIPE_TEST_SECRET_KEY"
         # elif businessId == "IOPAYMENT":
         #     PUBLISHABLE_KEY = "IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY"
         #     SECRET_KEY = "IOPAYMENTS_STRIPE_LIVE_SECRET_KEY"
@@ -87,13 +87,13 @@ class getCorrectKeys(Resource):
             SECRET_KEY = os.environ.get("NITYA_STRIPE_LIVE_SECRET_KEY")
         elif businessId == "NITYATEST":
             PUBLISHABLE_KEY = os.environ.get("NITYA_STRIPE_TEST_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("NITYA_STRIPE_LIVE_SECRET_KEY")
+            SECRET_KEY = os.environ.get("NITYA_STRIPE_TEST_SECRET_KEY")
         elif businessId == "SF":
             PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_LIVE_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("SN_STRIPE_LIVE_SECRET_KEY")
         elif businessId == "SFTEST":
             PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_TEST_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("SN_STRIPE_LIVE_SECRET_KEY")
+            SECRET_KEY = os.environ.get("SN_STRIPE_TEST_SECRET_KEY")
         elif businessId == "IOPAYMENT":
             PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_SECRET_KEY")
@@ -482,6 +482,7 @@ api.add_resource(retrieveStripeCharge, "/api/v2/retrieveStripeCharge")
 api.add_resource(createOffSessionPaymentIntent, "/api/v2/createOffSessionPaymentIntent")
 api.add_resource(refund, "/api/v2/refund")
 api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
+
 
 if __name__ == "__main__":
     # app.run()
