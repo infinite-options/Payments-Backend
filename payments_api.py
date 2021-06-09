@@ -52,6 +52,12 @@ class getCorrectKeys(Resource):
         # elif businessId == "M4METEST":
         #     PUBLISHABLE_KEY = "M4ME_STRIPE_TEST_PUBLISHABLE_KEY"
         #     SECRET_KEY = "M4ME_STRIPE_TEST_SECRET_KEY"
+        # elif businessId == "NITYA":
+        #     PUBLISHABLE_KEY = "NITYA_STRIPE_LIVE_PUBLISHABLE_KEY"
+        #     SECRET_KEY = "NITYA_STRIPE_LIVE_SECRET_KEY"
+        # elif businessId == "NITYATEST":
+        #     PUBLISHABLE_KEY = "NITYA_STRIPE_TEST_PUBLISHABLE_KEY"
+        #     SECRET_KEY = "NITYA_STRIPE_LIVE_SECRET_KEY"
         # elif businessId == "SF":
         #     PUBLISHABLE_KEY = "SN_STRIPE_LIVE_PUBLISHABLE_KEY"
         #     SECRET_KEY = "SN_STRIPE_LIVE_SECRET_KEY"
@@ -76,6 +82,12 @@ class getCorrectKeys(Resource):
         elif businessId == "M4METEST":
             PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_TEST_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("M4ME_STRIPE_TEST_SECRET_KEY")
+        elif businessId == "NITYA":
+            PUBLISHABLE_KEY = os.environ.get("NITYA_STRIPE_LIVE_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("NITYA_STRIPE_LIVE_SECRET_KEY")
+        elif businessId == "NITYATEST":
+            PUBLISHABLE_KEY = os.environ.get("NITYA_STRIPE_TEST_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("NITYA_STRIPE_LIVE_SECRET_KEY")
         elif businessId == "SF":
             PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_LIVE_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("SN_STRIPE_LIVE_SECRET_KEY")
@@ -418,7 +430,7 @@ class customerList(Resource):
         # print(customers["data"][0]["address"]["postal_code"])
         # print(customers["data"][0]["id"])
     
-        
+        # stripe.api_key = "sk_test_51HyqrgLMju5RPMEvow...JQ5TqpGkl299bo00yD1lTRNK"
 
 
         customers = stripe.Customer.list(limit=100)
@@ -442,6 +454,8 @@ class customerList(Resource):
             n = n + 1
             for items in customers["data"]:
                 print(n, items["id"], items["email"], items["created"])
+                # print(stripe.Customer.retrieve(items["id"]))
+                
                 customer_list.append(str(items["id"]) + ",  " + str(items["email"]))
                 if n - m == 99:
                     stripe_index = items["id"]
@@ -449,39 +463,11 @@ class customerList(Resource):
             print("Additional items: ",customers["has_more"])
             # print("Stripe Index: ", stripe_index)
             continue
-        
+
+        # print(stripe.Customer.retrieve("100-000127"))
         print("Finished")
 
         return(customer_list)
-
-        # print("Additional items: ",customers["has_more"])
-
-        # data = request.get_json(force=True)
-        # print("data: ", data)
-        # customerUid = data["customer_uid"]
-        # print("customer: ", customer_uid)
-        # print("stripe sk: ", stripe.api_key)
-
-        # # Check if Stripe does NOT already have the Customer UID
-        # try:
-        #     # IF Stripe has the UID then it cannot create another customer with same UID THEN try will fail
-        #     # IF it does NOT have the UID then it will create the customer
-        #     customer = stripe.Customer.create(id=customer_uid)
-        #     print("New Customer ID created!")
-        #     newCustomer = True
-        # except:
-        #     # IF Stripe has the UID, it will retrieve the info and print it
-        #     print("Found Customer ID!")
-        #     stripe.Customer.retrieve(customer_uid)
-        #     # stripe.Customer.retrieve("cus_JKUnLFjlbjW2PG")
-        #     print("Customer Info: ", stripe.Customer.retrieve(customer_uid))
-        #     newCustomer = False
-
-        # return newCustomer
-
-
-
-
 
 
 
@@ -496,7 +482,6 @@ api.add_resource(retrieveStripeCharge, "/api/v2/retrieveStripeCharge")
 api.add_resource(createOffSessionPaymentIntent, "/api/v2/createOffSessionPaymentIntent")
 api.add_resource(refund, "/api/v2/refund")
 api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
-# api.add_resource(calculator, '/api/v2/calculator/<string:pur_uid>')
 
 if __name__ == "__main__":
     # app.run()
