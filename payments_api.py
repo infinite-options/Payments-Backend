@@ -45,7 +45,7 @@ class getCorrectKeys(Resource):
         print("business: ", businessId)
 
         # FOR LOCAL TESTING
-        # print("In Try Block")
+        # print("Local Testing")
         # if businessId == "M4ME":
         #     PUBLISHABLE_KEY = "M4ME_STRIPE_LIVE_PUBLISHABLE_KEY"
         #     SECRET_KEY = "M4ME_STRIPE_LIVE_SECRET_KEY"
@@ -69,7 +69,7 @@ class getCorrectKeys(Resource):
         #     SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
 
         # FOR LIVE TESTING
-        print("In Try Block")
+        print("Live Testing")
         if businessId == "M4ME":
             PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_LIVE_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("M4ME_STRIPE_LIVE_SECRET_KEY")
@@ -132,6 +132,7 @@ class createNewCustomer(Resource):
         # print("data: ", data)
         # customerUid = data["customer_uid"]
         print("customer: ", customer_uid)
+        print("stripe sk: ", stripe.api_key)
 
         # Check if Stripe does NOT already have the Customer UID
         try:
@@ -373,6 +374,117 @@ class refund(Resource):
 
         return retrieveInfo
 
+# Find Created Customers
+class customerList(Resource):
+    def __call__(self):
+        print("In Call")
+
+
+    def get(self, businessId):
+        # Customer UID sent in from frontend
+        print("Find Customer List Attributes")
+
+        print("In Step 1")
+        keys = getCorrectKeys.post(self, businessId)
+        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+
+        # customers = stripe.Customer.list(limit=100, email='pmarathay@yahoo.com')
+        # customers = stripe.Customer.list(limit=100, email='pmarathay@gmail.com')
+        # customers = stripe.Customer.list(limit=100, starting_after='cus_JKScM1BhOQwEik')
+        # customers = stripe.Customer.list(limit=100, email='j12345l54321@gmail.com', starting_after='100-000148')
+        customers = stripe.Customer.list(limit=3)
+
+        print(customers, type(customers))
+
+        return(customers)
+
+
+    def post(self, businessId):
+    # def post(self):
+        # Customer UID sent in from frontend
+        print("Find Entire Customer List")
+
+        print("In Step 1")
+        keys = getCorrectKeys.post(self, businessId)
+        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+
+        # customers = stripe.Customer.list(limit=100, email='pmarathay@yahoo.com')
+        # customers = stripe.Customer.list(limit=100, email='pmarathay@gmail.com')
+        # customers = stripe.Customer.list(limit=100, starting_after='cus_JKScM1BhOQwEik')
+        # customers = stripe.Customer.list(limit=100, email='j12345l54321@gmail.com', starting_after='100-000148')
+        # customers = stripe.Customer.list(limit=100)
+
+        # print(customers, type(customers))
+        # print(customers["data"][0]["address"]["postal_code"])
+        # print(customers["data"][0]["id"])
+    
+        
+
+
+        customers = stripe.Customer.list(limit=100)
+        customer_list = []
+        
+        n = 1
+        for items in customers["data"]:
+            print(n, items["id"], items["email"], items["created"])
+            customer_list.append(items["id"])
+            if n == 99:
+                stripe_index = items["id"]
+            n = n + 1
+        print("Additional items: ",customers["has_more"])
+        # print("Stripe Index: ", stripe_index)
+
+
+        while customers["has_more"] == True:
+            print("\ninside if statement")
+            customers = stripe.Customer.list(limit=100, starting_after=stripe_index)
+            m = n
+            n = n + 1
+            for items in customers["data"]:
+                print(n, items["id"], items["email"], items["created"])
+                customer_list.append(items["id"])
+                if n - m == 99:
+                    stripe_index = items["id"]
+                n = n + 1
+            print("Additional items: ",customers["has_more"])
+            # print("Stripe Index: ", stripe_index)
+            continue
+        
+        print("Finished")
+
+        return(customer_list)
+
+        # print("Additional items: ",customers["has_more"])
+
+        # data = request.get_json(force=True)
+        # print("data: ", data)
+        # customerUid = data["customer_uid"]
+        # print("customer: ", customer_uid)
+        # print("stripe sk: ", stripe.api_key)
+
+        # # Check if Stripe does NOT already have the Customer UID
+        # try:
+        #     # IF Stripe has the UID then it cannot create another customer with same UID THEN try will fail
+        #     # IF it does NOT have the UID then it will create the customer
+        #     customer = stripe.Customer.create(id=customer_uid)
+        #     print("New Customer ID created!")
+        #     newCustomer = True
+        # except:
+        #     # IF Stripe has the UID, it will retrieve the info and print it
+        #     print("Found Customer ID!")
+        #     stripe.Customer.retrieve(customer_uid)
+        #     # stripe.Customer.retrieve("cus_JKUnLFjlbjW2PG")
+        #     print("Customer Info: ", stripe.Customer.retrieve(customer_uid))
+        #     newCustomer = False
+
+        # return newCustomer
+
+
+
+
+
+
+
 
 # Define API routes
 # NEW BASE URL:  https://huo8rhh76i.execute-api.us-west-1.amazonaws.com/dev/
@@ -383,7 +495,8 @@ api.add_resource(createPaymentIntent, "/api/v2/createPaymentIntent")
 api.add_resource(retrieveStripeCharge, "/api/v2/retrieveStripeCharge")
 api.add_resource(createOffSessionPaymentIntent, "/api/v2/createOffSessionPaymentIntent")
 api.add_resource(refund, "/api/v2/refund")
-
+api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
+# api.add_resource(calculator, '/api/v2/calculator/<string:pur_uid>')
 
 if __name__ == "__main__":
     # app.run()
