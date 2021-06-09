@@ -427,7 +427,7 @@ class customerList(Resource):
         n = 1
         for items in customers["data"]:
             print(n, items["id"], items["email"], items["created"])
-            customer_list.append(items["id"])
+            customer_list.append(str(items["id"]) + ",  " + str(items["email"]))
             if n == 99:
                 stripe_index = items["id"]
             n = n + 1
@@ -442,7 +442,7 @@ class customerList(Resource):
             n = n + 1
             for items in customers["data"]:
                 print(n, items["id"], items["email"], items["created"])
-                customer_list.append(items["id"])
+                customer_list.append(str(items["id"]) + ",  " + str(items["email"]))
                 if n - m == 99:
                     stripe_index = items["id"]
                 n = n + 1
