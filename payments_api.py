@@ -367,24 +367,26 @@ class retrieveLast4(Resource):
 
         data = request.get_json(force=True)
         print("\ndata: ", data)
-        charge_id = data["charge_id"]
+        stripe_id = data["charge_id"]
         businessId = data["business_code"]
-        print("charge_id: ", charge_id)
+        print("charge_id: ", stripe_id)
         print("business: ", businessId)
-        
-        if 'ch_' in str(charge_id):
-            print("\nIn Step 1")
-            keys = getCorrectKeys.post(self, businessId)
-            print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
-            print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
-            stripe.api_key = keys["SECRET_KEY"]
-            print("stripe api key: ", stripe.api_key)
-            stripe.api_version = None
 
-            # # Retrieve Last 4 with Charge ID
-            # # Charge ID has a SUBSET of Payment Intent
+        print("\nIn Step 1: Get Stripe Keys")
+        keys = getCorrectKeys.post(self, businessId)
+        print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+        print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
+        stripe.api_key = keys["SECRET_KEY"]
+        print("stripe api key: ", stripe.api_key)
+        stripe.api_version = None
+
+        if stripe_id[:2] == "pi":
+            stripe_id = stripe.PaymentIntent.retrieve(stripe_id).get("charges").get("data")[0].get("id")
+        
+        # if 'ch_' in str(stripe_id):
+        if stripe_id[:2] == "ch":
             print("\nRetrieve Charge ID Info")
-            retrieveInfo = stripe.Charge.retrieve(charge_id)
+            retrieveInfo = stripe.Charge.retrieve(stripe_id)
             print("Last 4: ", retrieveInfo.payment_method_details.card.last4)
 
             return retrieveInfo.payment_method_details.card.last4
