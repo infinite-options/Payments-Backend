@@ -18,6 +18,7 @@ from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from dotenv import load_dotenv, find_dotenv
+import datetime
 
 
 # static_dir = str(os.path.abspath(os.path.join(__file__, "..", os.getenv("STATIC_DIR"))))
@@ -82,6 +83,9 @@ class getCorrectKeys(Resource):
         elif businessId == "M4METEST":
             PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_TEST_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("M4ME_STRIPE_TEST_SECRET_KEY")
+        elif businessId == "M4METEST!":
+            PUBLISHABLE_KEY = "pk_test_51HyqrgLMju5RPMEv5ai8f5nU87HWQFNXOZmLTWLIrqlNFMPjrboGfQsj4FDUvaHRAhxyRBQrfhmXC3kMnxEYRiKO00m4W3jj5a"
+            SECRET_KEY = "sk_test_51HyqrgLMju5RPMEvowxoZHOI9LjFSxI9X3KPsOM7KVA4pxtJqlEwEkjLJ3GCL56xpIQuVImkSwJQ5TqpGkl299bo00yD1lTRNK"
         elif businessId == "NITYA":
             PUBLISHABLE_KEY = os.environ.get("NITYA_STRIPE_LIVE_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("NITYA_STRIPE_LIVE_SECRET_KEY")
@@ -101,8 +105,9 @@ class getCorrectKeys(Resource):
             PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_SECRET_KEY")
         else:
-            PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
+            PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG
             SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
+
 
         print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
         print("SECRET_KEY: ", SECRET_KEY)
@@ -151,6 +156,8 @@ class createNewCustomer(Resource):
             # IF Stripe has the UID then it cannot create another customer with same UID THEN try will fail
             # IF it does NOT have the UID then it will create the customer
             customer = stripe.Customer.create(id=customer_uid)
+            # To store customer with email (or other fields), use this format
+            # customer = stripe.Customer.create(id=customer_uid, email="mickeymouse@gmail.com")
             print("New Customer ID created!")
             newCustomer = True
         except:
@@ -172,7 +179,7 @@ class createPaymentIntentOnly(Resource):
     def get(self):
 
         # Create Payment Intent
-        print("Step 3")
+        print("Step 3 - Get Request.  Values are hard coded")
         intent = stripe.PaymentIntent.create(
             amount=1099,
             currency="usd",
@@ -326,7 +333,8 @@ class retrieveStripeCharge(Resource):
         # # Retrieve Charge ID (Typically from Mobile) - works
         # # Charge ID has a SUBSET of Payment Intent
         print("\nRetrieve Charge ID Info")
-        retrieveInfo = stripe.Charge.retrieve("ch_1Ii1DPGQZnKn7zmSEmC80Hx7")
+        retrieveInfo = stripe.Charge.retrieve("ch_1J32t7LMju5RPMEvMSe2q863")
+        print("Last 4: ", retrieveInfo.payment_method_details.card.last4)
         print("Stripe Charge ID Info: ", retrieveInfo)
 
         # # Retrieve Payment Intent (Typically from Web or Postman) - -works
@@ -352,6 +360,36 @@ class retrieveStripeCharge(Resource):
         # print("Stripe All Customers Info: ", retrieveInfo)
 
         return retrieveInfo
+
+
+class retrieveLast4(Resource):
+    def post(self):
+
+        data = request.get_json(force=True)
+        print("\ndata: ", data)
+        charge_id = data["charge_id"]
+        businessId = data["business_code"]
+        print("charge_id: ", charge_id)
+        print("business: ", businessId)
+        
+        if 'ch_' in str(charge_id):
+            print("\nIn Step 1")
+            keys = getCorrectKeys.post(self, businessId)
+            print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+            print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
+            stripe.api_key = keys["SECRET_KEY"]
+            print("stripe api key: ", stripe.api_key)
+            stripe.api_version = None
+
+            # # Retrieve Last 4 with Charge ID
+            # # Charge ID has a SUBSET of Payment Intent
+            print("\nRetrieve Charge ID Info")
+            retrieveInfo = stripe.Charge.retrieve(charge_id)
+            print("Last 4: ", retrieveInfo.payment_method_details.card.last4)
+
+            return retrieveInfo.payment_method_details.card.last4
+
+        return("Enter a valid charge id")
 
 
 # Process a Refund
@@ -438,8 +476,8 @@ class customerList(Resource):
         
         n = 1
         for items in customers["data"]:
-            print(n, items["id"], items["email"], items["created"])
-            customer_list.append(str(items["id"]) + ",  " + str(items["email"]))
+            print(n, items["id"], items["email"], datetime.datetime.fromtimestamp(items["created"]))
+            customer_list.append(str(items["id"]) + ",  " + str(items["email"]) + ", " + str(datetime.datetime.fromtimestamp(items["created"])))
             if n == 99:
                 stripe_index = items["id"]
             n = n + 1
@@ -453,10 +491,10 @@ class customerList(Resource):
             m = n
             n = n + 1
             for items in customers["data"]:
-                print(n, items["id"], items["email"], items["created"])
+                print(n, items["id"], items["email"], datetime.datetime.fromtimestamp(items["created"]))
                 # print(stripe.Customer.retrieve(items["id"]))
                 
-                customer_list.append(str(items["id"]) + ",  " + str(items["email"]))
+                customer_list.append(str(items["id"]) + ",  " + str(items["email"]) + ", " + str(datetime.datetime.fromtimestamp(items["created"])))
                 if n - m == 99:
                     stripe_index = items["id"]
                 n = n + 1
@@ -470,8 +508,6 @@ class customerList(Resource):
         return(customer_list)
 
 
-
-
 # Define API routes
 # NEW BASE URL:  https://huo8rhh76i.execute-api.us-west-1.amazonaws.com/dev/
 api.add_resource(getCorrectKeys, "/api/v2/getCorrectKeys/<string:businessId>")
@@ -479,6 +515,8 @@ api.add_resource(createNewCustomer, "/api/v2/createNewCustomer/<string:customer_
 # api.add_resource(createCustomerOnly, "/api/v2/createCustomerOnly<string:customer_uid>")
 api.add_resource(createPaymentIntent, "/api/v2/createPaymentIntent")
 api.add_resource(retrieveStripeCharge, "/api/v2/retrieveStripeCharge")
+api.add_resource(retrieveLast4, "/api/v2/retrieveLast4")
+
 api.add_resource(createOffSessionPaymentIntent, "/api/v2/createOffSessionPaymentIntent")
 api.add_resource(refund, "/api/v2/refund")
 api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
