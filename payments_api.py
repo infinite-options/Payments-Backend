@@ -17,7 +17,7 @@ import requests
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS
-from dotenv import load_dotenv, find_dotenv
+# from dotenv import load_dotenv, find_dotenv
 import datetime
 
 
@@ -118,23 +118,27 @@ class getCorrectKeys(Resource):
 
 
 # STEP 2: Create a Customer
-# class createCustomerOnly(Resource):
-#     def __call__(self):
-#         print("In Call")
+class createCustomerOnly(Resource):
+    def __call__(self):
+        print("In Call")
 
-#     def get(self):
+    def get(self):
 
-#         # Create Payment Intent
-#         # Create customer.  Need this step to save CC info
-#         # Returns a Customer ID Created by Stripe
-#         print("Step 2")
-#         print("stripe PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
-#         customer = stripe.Customer.create()
-#         print("customer: ", customer)
-#         customerId = customer.id
-#         print("customer ID: ", customerId)
+        # Create Payment Intent
+        # Create customer.  Need this step to save CC info
+        # Returns a Customer ID Created by Stripe
+        print("Step 2")
+        PUBLISHABLE_KEY = "pk_test_51J0UzOLGBFAvIBPFJbfSOn5SboZ4sX5TOrklg3o45EQywUNwxTameQVrEF9BZfmcU6WtkUFVQ2xvASNLC6tVLhdK00E1kJtmzH"
+        print("stripe PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
+        stripe.api_key = SECRET_KEY
+        stripe.api_key = "sk_test_51J0UzOLGBFAvIBPFAm7Y5XGQ5APRxzzUeVJ1G1VdV010gW0bGzbDZsdM7fNeFDRs0WTenXV4Q9ANpztS7Y7ghtwb007quqRPZ3"
+        print("stripe sk: ", stripe.api_key)
+        customer = stripe.Customer.create()
+        print("customer: ", customer)
+        customerId = customer.id
+        print("customer ID: ", customerId)
 
-#         return customerId
+        return customerId
 
 
 class createNewCustomer(Resource):
@@ -155,7 +159,10 @@ class createNewCustomer(Resource):
         try:
             # IF Stripe has the UID then it cannot create another customer with same UID THEN try will fail
             # IF it does NOT have the UID then it will create the customer
-            customer = stripe.Customer.create(id=customer_uid)
+            if customer_uid != "":
+                customer = stripe.Customer.create(id=customer_uid)
+            else:
+                customer = stripe.Customer.create()
             # To store customer with email (or other fields), use this format
             # customer = stripe.Customer.create(id=customer_uid, email="mickeymouse@gmail.com")
             print("New Customer ID created!")
@@ -514,7 +521,7 @@ class customerList(Resource):
 # NEW BASE URL:  https://huo8rhh76i.execute-api.us-west-1.amazonaws.com/dev/
 api.add_resource(getCorrectKeys, "/api/v2/getCorrectKeys/<string:businessId>")
 api.add_resource(createNewCustomer, "/api/v2/createNewCustomer/<string:customer_uid>")
-# api.add_resource(createCustomerOnly, "/api/v2/createCustomerOnly<string:customer_uid>")
+api.add_resource(createCustomerOnly, "/api/v2/createCustomerOnly")
 api.add_resource(createPaymentIntent, "/api/v2/createPaymentIntent")
 api.add_resource(retrieveStripeCharge, "/api/v2/retrieveStripeCharge")
 api.add_resource(retrieveLast4, "/api/v2/retrieveLast4")
