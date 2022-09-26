@@ -98,6 +98,12 @@ class getCorrectKeys(Resource):
         elif businessId == "SFTEST":
             PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_TEST_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("SN_STRIPE_TEST_SECRET_KEY")
+        elif businessId == "PM":
+            PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_LIVE_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("PM_STRIPE_LIVE_SECRET_KEY")
+        elif businessId == "PMTEST":
+            PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_TEST_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("PM_STRIPE_TEST_SECRET_KEY")
         elif businessId == "IOPAYMENT":
             PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_SECRET_KEY")
