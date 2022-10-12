@@ -53,6 +53,9 @@ class getCorrectKeys(Resource):
         # elif businessId == "M4METEST":
         #     PUBLISHABLE_KEY = "M4ME_STRIPE_TEST_PUBLISHABLE_KEY"
         #     SECRET_KEY = "M4ME_STRIPE_TEST_SECRET_KEY"
+        # elif businessId == "M4METEST!":
+        #     PUBLISHABLE_KEY = "pk_test_51HyqrgLMju5RPMEv5ai8f5nU87HWQFNXOZmLTWLIrqlNFMPjrboGfQsj4FDUvaHRAhxyRBQrfhmXC3kMnxEYRiKO00m4W3jj5a"
+        #     SECRET_KEY = "sk_test_51HyqrgLMju5RPMEvowxoZHOI9LjFSxI9X3KPsOM7KVA4pxtJqlEwEkjLJ3GCL56xpIQuVImkSwJQ5TqpGkl299bo00yD1lTRNK"
         # elif businessId == "NITYA":
         #     PUBLISHABLE_KEY = "NITYA_STRIPE_LIVE_PUBLISHABLE_KEY"
         #     SECRET_KEY = "NITYA_STRIPE_LIVE_SECRET_KEY"
@@ -65,6 +68,12 @@ class getCorrectKeys(Resource):
         # elif businessId == "SFTEST":
         #     PUBLISHABLE_KEY = "SN_STRIPE_TEST_PUBLISHABLE_KEY"
         #     SECRET_KEY = "SN_STRIPE_TEST_SECRET_KEY"
+        #  elif businessId == "PM":
+        #     PUBLISHABLE_KEY = "PM_STRIPE_LIVE_PUBLISHABLE_KEY"
+        #     SECRET_KEY = "PM_STRIPE_LIVE_SECRET_KEY"
+        # elif businessId == "PMTEST":
+        #     PUBLISHABLE_KEY = "PM_STRIPE_TEST_PUBLISHABLE_KEY"
+        #     SECRET_KEY = "PM_STRIPE_TEST_SECRET_KEY"
         # elif businessId == "IOPAYMENT":
         #     PUBLISHABLE_KEY = "IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY"
         #     SECRET_KEY = "IOPAYMENTS_STRIPE_LIVE_SECRET_KEY"
