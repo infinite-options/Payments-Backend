@@ -17,8 +17,12 @@ import requests
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS
+from flask_mail import Mail, Message
 # from dotenv import load_dotenv, find_dotenv
 import datetime
+
+from email import message
+
 
 
 # static_dir = str(os.path.abspath(os.path.join(__file__, "..", os.getenv("STATIC_DIR"))))
@@ -31,6 +35,38 @@ CORS(app)
 
 # API
 api = Api(app)
+
+# --------------- Mail Variables ------------------
+# Mail username and password loaded in .env file
+
+# app.config['MAIL_USERNAME'] = "support@infiniteoptions.com"
+# app.config['MAIL_PASSWORD'] = "Support***"
+# app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+
+app.config['MAIL_USERNAME'] = os.getenv('SUPPORT_EMAIL')
+app.config['MAIL_PASSWORD'] = os.getenv('SUPPORT_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+
+
+# Setting for mydomain.com
+app.config["MAIL_SERVER"] = "smtp.mydomain.com"
+app.config["MAIL_PORT"] = 465
+
+# Setting for gmail
+# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+# app.config['MAIL_PORT'] = 465
+
+
+app.config["MAIL_USE_TLS"] = False
+app.config["MAIL_USE_SSL"] = True
+
+# Set this to false when deploying to live application
+app.config["DEBUG"] = True
+# app.config["DEBUG"] = False
+
+# app.config["STRIPE_SECRET_KEY"] = os.getenv("STRIPE_SECRET_KEY")
+
+mail = Mail(app)
 
 
 # STEP 1: Setup Stripe
@@ -197,6 +233,8 @@ class createNewCustomer(Resource):
             print("New Customer ID created!", customer_uid)
             newCustomer = True
             # Send Email here
+            message = "New Customer created by Stripe!"
+            SendEmail.get(self, message, customer_uid)
         except:
             # IF Stripe has the UID, it will retrieve the info and print it
             print("Found Customer ID!")
@@ -277,6 +315,8 @@ class createPaymentIntent(Resource):
         print("\nIn Step 2")
         if customer_uid == "":
             # Send email here
+            message = "No Customer ID sent"
+            SendEmail.get(self, message, data)
             customer = stripe.Customer.create()
             customer_uid = customer.id
             print("Created New Customer ID: ", customer_uid)
@@ -292,6 +332,8 @@ class createPaymentIntent(Resource):
             print(paymentIntent)
         except: 
             # Send email here
+            message = "Payment Intent could not be created"
+            SendEmail.get(self, message, data)
             print("Error Occurred")
             paymentIntent = "Notify customer that system is down"
 
@@ -354,6 +396,72 @@ class createOffSessionPaymentIntent(Resource):
         # return {"secret": client_secret}
         return chargeId
 
+
+# Send Email
+class SendEmail(Resource):
+    def __call__(self):
+        print("In SendEmail")
+
+    # def get(self, message):
+    def get(self, message, data):
+        print("\nIn SendEmail")
+        response = {}
+        try:
+            # conn = connect()
+            # message = "test"
+            # print("first email sent")
+            print("Message to send: ", message)
+            print("Data to send: ", data, type(data))
+            # Send email to Host
+            msg = Message(
+                "Payment Error Occurred",
+                sender="support@infiniteoptions.com",
+                recipients=["pmarathay@gmail.com"],
+            )
+            print(msg)
+            msg.body = (
+                "Hi !\n\n"
+                "You just got an email from your website! \n"
+                "Here are the particulars:\n"
+                # "Name:      " + name + "\n"
+                # "Email:     " + email + "\n"
+                # "Phone:     " + str(phone) + "\n"
+                # "Subject:   " + subject + "\n"
+                "Message:   " + message + "\n"
+                "Data Sent: " + str(data) + "\n"
+            )
+            print(msg)
+            # "Thx - Nitya Ayurveda\n\n"
+            # print(msg)
+            # print('msg-bd----', msg.body)
+            mail.send(msg)
+            print('\nafter mail send')
+
+            # # Send email to Sender
+            # msg2 = Message(
+            #     "New Email from Nitya Ayurveda!",
+            #     sender="support@infiniteoptions.com",
+            #     recipients=[email],
+            # )
+            # msg2.body = (
+            #     "Hi !\n\n"
+            #     "Thanks for your email! \n"
+            #     "Here are the particulars we sent:\n"
+            #     "Name:      " + name + "\n"
+            #     "Email:     " + email + "\n"
+            #     "Phone:     " + str(phone) + "\n"
+            #     "Subject:   " + subject + "\n"
+            #     "Message:   " + message + "\n"
+            # )
+            # "Thx - Nitya Ayurveda\n\n"
+            # # print('msg-bd----', msg.body)
+            # mail.send(msg2)
+            # print('after mail send')
+
+            return 'Email Sent', 200
+
+        except:
+            print("Error Occurred - except")
 
 # Retrieve Stripe Info - Utilities
 class retrieveStripeCharge(Resource):
@@ -568,6 +676,8 @@ api.add_resource(retrieveLast4, "/api/v2/retrieveLast4")
 api.add_resource(createOffSessionPaymentIntent, "/api/v2/createOffSessionPaymentIntent")
 api.add_resource(refund, "/api/v2/refund")
 api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
+
+api.add_resource(SendEmail, "/api/v2/sendEmail/<string:message>")
 
 
 if __name__ == "__main__":
