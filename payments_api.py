@@ -65,8 +65,8 @@ app.config["MAIL_USE_TLS"] = False
 app.config["MAIL_USE_SSL"] = True
 
 # Set this to false when deploying to live application
-app.config["DEBUG"] = True
-# app.config["DEBUG"] = False
+# app.config["DEBUG"] = True
+app.config["DEBUG"] = False
 
 # app.config["STRIPE_SECRET_KEY"] = os.getenv("STRIPE_SECRET_KEY")
 
