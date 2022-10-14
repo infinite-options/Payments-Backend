@@ -43,9 +43,13 @@ api = Api(app)
 # app.config['MAIL_PASSWORD'] = "Support***"
 # app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
-app.config['MAIL_USERNAME'] = os.getenv('SUPPORT_EMAIL')
-app.config['MAIL_PASSWORD'] = os.getenv('SUPPORT_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+# app.config['MAIL_USERNAME'] = os.getenv('SUPPORT_EMAIL')
+# app.config['MAIL_PASSWORD'] = os.getenv('SUPPORT_PASSWORD')
+# app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+
+app.config['MAIL_USERNAME'] = os.environ.get('SUPPORT_EMAIL')
+app.config['MAIL_PASSWORD'] = os.environ.get('SUPPORT_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 
 
 # Setting for mydomain.com
@@ -200,29 +204,6 @@ class createNewCustomer(Resource):
         print("customer: ", customer_uid)
         print("stripe sk: ", stripe.api_key)
 
-        # # Check if Stripe does NOT already have the Customer UID
-        # try:
-        #     # IF Stripe has the UID then it cannot create another customer with same UID THEN try will fail
-        #     # IF it does NOT have the UID then it will create the customer
-        #     if customer_uid != "":
-        #         print("in IF statement", customer_uid)
-        #         customer = stripe.Customer.create(id=customer_uid)
-        #     else:
-        #         print("in ELSE statement", customer_uid)
-        #         customer = stripe.Customer.create()
-        #     # To store customer with email (or other fields), use this format
-        #     # customer = stripe.Customer.create(id=customer_uid, email="mickeymouse@gmail.com")
-        #     customer_uid = customer.id
-        #     print("New Customer ID created!", customer_uid)
-        #     newCustomer = True
-        # except:
-        #     # IF Stripe has the UID, it will retrieve the info and print it
-        #     print("Found Customer ID!")
-        #     stripe.Customer.retrieve(customer_uid)
-        #     # stripe.Customer.retrieve("cus_JKUnLFjlbjW2PG")
-        #     print("Customer Info: ", stripe.Customer.retrieve(customer_uid))
-        #     newCustomer = False
-
 
         # Check if Stripe does NOT already have the Customer UID
         try:
@@ -288,7 +269,8 @@ class createPaymentIntentOnly(Resource):
             # off_session=True,
             # confirm=True,
         )
-        print("intent: ", intent)
+        # Comment out print("intent: ", intent) to avoid excess CloudWatch entries
+        # print("intent: ", intent)
         client_secret = intent.client_secret
         # return {"secret": client_secret}
         return client_secret
@@ -303,13 +285,13 @@ class createPaymentIntent(Resource):
         customer_uid = data["customer_uid"]
         businessId = data["business_code"]
         charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
-        print("customer: ", customer_uid)
-        print("business: ", businessId)
-        print("amount: ", charge_amount)
+        # print("customer: ", customer_uid)
+        # print("business: ", businessId)
+        # print("amount: ", charge_amount)
 
         print("\nIn Step 1")
         keys = getCorrectKeys.post(self, businessId)
-        print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
 
 
         print("\nIn Step 2")
@@ -322,7 +304,7 @@ class createPaymentIntent(Resource):
             print("Created New Customer ID: ", customer_uid)
 
         newCustomer = createNewCustomer.post(self, customer_uid)
-        print(newCustomer)
+        # print(newCustomer)
         print("customer_uid: ", customer_uid)
 
 
