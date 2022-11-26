@@ -443,7 +443,8 @@ class SendEmail(Resource):
             return 'Email Sent', 200
 
         except:
-            print("Error Occurred - except")
+            print("Error Occurred - except block.  Email likely does not get sent in Local mode")
+            return 'Email NOT Sent.  Email will not be sent if in Local Mode'
 
 # Retrieve Stripe Info - Utilities
 class retrieveStripeCharge(Resource):
@@ -659,7 +660,7 @@ api.add_resource(createOffSessionPaymentIntent, "/api/v2/createOffSessionPayment
 api.add_resource(refund, "/api/v2/refund")
 api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
 
-api.add_resource(SendEmail, "/api/v2/sendEmail/<string:message>")
+api.add_resource(SendEmail, "/api/v2/sendEmail/<string:message>,<string:data>")
 
 
 if __name__ == "__main__":
