@@ -538,8 +538,8 @@ class refund(Resource):
         print("\ndata: ", data)
         customer_uid = data["customer_uid"]
         businessId = data["business_code"]
-        refund_amount = data["refund_amount"]
-        charge_id = data["charge_id"]
+        refund_amount = data["refund_amount"] * 100      #refund amount must be multipled by 100 to convert it into cents
+        charge_id = data["charge_id"]                    #charge ID comes from Stripe > Payments > select Successful Payment > scroll down to Connections
         # charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
         print("customer: ", customer_uid)
         print("business: ", businessId)
