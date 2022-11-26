@@ -394,13 +394,24 @@ class SendEmail(Resource):
             # print("first email sent")
             print("Message to send: ", message)
             print("Data to send: ", data, type(data))
-            # Send email to Host
-            msg = Message(
-                "Payment Error Occurred",
+
+
+            # Send email to Host            
+            # Select appropriate Message Subject
+            if message == "New Customer created by Stripe!":
+                msg = Message(
+                "New Customer Created",
                 sender="support@infiniteoptions.com",
                 recipients=["pmarathay@gmail.com"],
-            )
+                )
+            else:
+                msg = Message(
+                    "Payment Error Occurred",
+                    sender="support@infiniteoptions.com",
+                    recipients=["pmarathay@gmail.com"],
+                )
             print(msg)
+
             msg.body = (
                 "Hi !\n\n"
                 "You just got an email from your website! \n"
@@ -412,7 +423,7 @@ class SendEmail(Resource):
                 "Message:   " + message + "\n"
                 "Data Sent: " + str(data) + "\n"
             )
-            print(msg)
+
             # "Thx - Nitya Ayurveda\n\n"
             # print(msg)
             # print('msg-bd----', msg.body)
