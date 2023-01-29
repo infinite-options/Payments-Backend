@@ -82,7 +82,6 @@ class getCorrectKeys(Resource):
     def post(self, businessId):
         # Business Code sent in as a parameter from frontend
         print("Step 1: Get Correct Keys")
-        businessID = businessId
         print("business: ", businessId)
 
         # FOR LOCAL TESTING
@@ -203,6 +202,11 @@ class createNewCustomer(Resource):
         # customerUid = data["customer_uid"]
         print("customer: ", customer_uid)
         print("stripe sk: ", stripe.api_key)
+        last4 = "No Key"
+
+        if len(stripe.api_key)>4:
+            last4 = stripe.api_key[-4:]
+
 
 
         # Check if Stripe does NOT already have the Customer UID
@@ -214,7 +218,7 @@ class createNewCustomer(Resource):
             print("New Customer ID created!", customer_uid)
             newCustomer = True
             # Send Email here
-            message = "New Customer created by Stripe!"
+            message = "New Customer created by Stripe! " + last4
             SendEmail.get(self, message, customer_uid)
         except:
             # IF Stripe has the UID, it will retrieve the info and print it
@@ -291,7 +295,7 @@ class createPaymentIntent(Resource):
 
         print("\nIn Step 1")
         keys = getCorrectKeys.post(self, businessId)
-        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+        print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
 
 
         print("\nIn Step 2")
@@ -398,11 +402,11 @@ class SendEmail(Resource):
 
             # Send email to Host            
             # Select appropriate Message Subject
-            if message == "New Customer created by Stripe!":
+            if message[:31] == "New Customer created by Stripe!":
                 msg = Message(
-                "New Customer Created",
-                sender="support@infiniteoptions.com",
-                recipients=["pmarathay@gmail.com"],
+                    "New Customer Created",
+                    sender="support@infiniteoptions.com",
+                    recipients=["pmarathay@gmail.com"],
                 )
             else:
                 msg = Message(
