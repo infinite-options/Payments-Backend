@@ -17,6 +17,7 @@ import requests
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS
+from Ach_Payments import createACHPaymentIntent
 from dotenv import load_dotenv, find_dotenv
 
 
@@ -552,6 +553,7 @@ api.add_resource(createCustomerOnly, "/api/v2/createCustomerOnly")
 api.add_resource(createNewCustomer, "/api/v2/createNewCustomer")
 api.add_resource(createOffSessionPaymentIntent, "/api/v2/createOffSessionPaymentIntent")
 api.add_resource(customerPaymentMethodList, "/api/v2/customerPaymentMethodList")
+api.add_resource(createACHPaymentIntent, "/api/v2/createACHPaymentIntent")
 
 if __name__ == "__main__":
     # app.run()
