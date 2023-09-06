@@ -13,16 +13,15 @@ import stripe
 import json
 import os
 import requests
-
+from Ach_Payments import createACHPaymentIntent, verifyACH, retrieve, status, webhook
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS
-from Ach_Payments import createACHPaymentIntent, verifyACH, retrieve, status
-from dotenv import load_dotenv, find_dotenv
+#from dotenv import load_dotenv, find_dotenv
 
 
 # Setup Stripe python client library
-load_dotenv(find_dotenv())
+#load_dotenv(find_dotenv())
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 stripe.api_version = os.getenv("STRIPE_API_VERSION")
 
@@ -106,6 +105,9 @@ class getCorrectKeys(Resource):
         elif businessId == "IOTEST":
             PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_SECRET_KEY")
+        elif businessId == "ACH":
+            PUBLISHABLE_KEY = "pk_test_51NkKHkFXblfqA49hJnh8bdxgRzvhtaACstCkJQIO4Sq4szBeomcdKTCh4tsMbuc8SiATjA8IPqcwkvnLENclDZJX00TsjxpFYU"
+            SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
         else:
             PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
             SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
@@ -236,6 +238,9 @@ class createPaymentIntent(Resource):
         elif businessId == "IOTEST":
             PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_SECRET_KEY")
+        elif businessId == "ACH":
+            PUBLISHABLE_KEY = "pk_test_51NkKHkFXblfqA49hJnh8bdxgRzvhtaACstCkJQIO4Sq4szBeomcdKTCh4tsMbuc8SiATjA8IPqcwkvnLENclDZJX00TsjxpFYU"
+            SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
         else:
             print("In Else Statment")
             PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
@@ -290,15 +295,15 @@ class createPaymentIntent(Resource):
         #     "tip": "2",
         #     "ambassador": "",
         # }
-        params = {
-            "item_uid": data["item_uid"],
-            "num_issues": data["num_deliveries"],
-            "customer_uid": data["customer_uid"],
-            "tip": data["payment_summary"]["tip"],
-            "ambassador": "",
-        }
-        print("params: ", params)
-        print(params["item_uid"])
+        # params = {
+        #     "item_uid": data["item_uid"],
+        #     "num_issues": data["num_deliveries"],
+        #     "customer_uid": data["customer_uid"],
+        #     "tip": data["payment_summary"]["tip"],
+        #     "ambassador": "",
+        # }
+        # print("params: ", params)
+        # print(params["item_uid"])
         # print(params.json())
         # print(params.item_uid)
 
@@ -341,23 +346,35 @@ class createPaymentIntent(Resource):
 
         # data = request.get_json(force=True)
         # print("data: ", data)
+        # intent = stripe.PaymentIntent.create(
+        #     # amount=int(float(data["payment_summary"]["total"]) * 100),
+        #     amount=int(total_amount * 100),
+        #     # amount=1099,
+        #     # currency="usd",
+        #     currency=data["currency"],
+        #     # Verify your integration in this guide by including this parameter
+        #     # metadata={'integration_check': 'accept_a_payment'},
+        #     # customer="cus_JKUnLFjlbjW2PG",
+        #     customer=data["customer_uid"],
+        #     # customer='{{CUSTOMER_ID}}',
+        #     # payment_method="pm_1IhpoELMju5RPMEvq6B92VsG",
+        #     # payment_method='{{PAYMENT_METHOD_ID}}',
+        #     # off_session=True,
+        #     # confirm=True,
+        # )
+        # print("intent: ", intent)
         intent = stripe.PaymentIntent.create(
-            # amount=int(float(data["payment_summary"]["total"]) * 100),
-            amount=int(total_amount * 100),
-            # amount=1099,
-            # currency="usd",
-            currency=data["currency"],
-            # Verify your integration in this guide by including this parameter
-            # metadata={'integration_check': 'accept_a_payment'},
-            # customer="cus_JKUnLFjlbjW2PG",
-            customer=data["customer_uid"],
-            # customer='{{CUSTOMER_ID}}',
-            # payment_method="pm_1IhpoELMju5RPMEvq6B92VsG",
-            # payment_method='{{PAYMENT_METHOD_ID}}',
-            # off_session=True,
-            # confirm=True,
+            amount=1099,
+            currency="usd",
+            setup_future_usage="off_session",
+            customer= customerUid,
+            payment_method_types=["us_bank_account"],
+            payment_method_options={
+                "us_bank_account": {
+                    "financial_connections": {"permissions": ["payment_method", "balances"]},
+                },
+            },
         )
-        print("intent: ", intent)
         client_secret = intent.client_secret
         # return {"secret": client_secret}
         return client_secret
@@ -549,14 +566,15 @@ def webhook_received():
 api.add_resource(getCorrectKeys, "/api/v2/getCorrectKeys")
 api.add_resource(createPaymentIntentOnly, "/api/v2/createPaymentIntentOnly")
 api.add_resource(createPaymentIntent, "/api/v2/createPaymentIntent")
+api.add_resource(createACHPaymentIntent, "/api/v2/createACHPaymentIntent")
 api.add_resource(createCustomerOnly, "/api/v2/createCustomerOnly")
 api.add_resource(createNewCustomer, "/api/v2/createNewCustomer")
 api.add_resource(createOffSessionPaymentIntent, "/api/v2/createOffSessionPaymentIntent")
 api.add_resource(customerPaymentMethodList, "/api/v2/customerPaymentMethodList")
-api.add_resource(createACHPaymentIntent, "/api/v2/createACHPaymentIntent")
 api.add_resource(verifyACH, "/api/v2/verifyACH")
 api.add_resource(retrieve, "/api/v2/retrieve")
 api.add_resource(status, "/api/v2/status")
+api.add_resource(webhook, "/api/v2/webhook")
 
 if __name__ == "__main__":
     # app.run()
