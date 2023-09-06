@@ -13,15 +13,21 @@ import stripe
 import json
 import os
 import requests
+import datetime
 
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_mail import Mail, Message
 # from dotenv import load_dotenv, find_dotenv
-import datetime
-
 from email import message
+
+from getKey import getCorrectKeys
+from getCustomer import createCustomerOnly, createNewCustomer
+from STRIPE_payments_api import createPaymentIntentOnly, createPaymentIntent
+from ACH_payments import createACHPaymentIntent
+from ACH_payments import verifyACH, retrieve, status, webhook
+
 
 
 
@@ -75,255 +81,258 @@ mail = Mail(app)
 
 # STEP 1: Setup Stripe
 # Get the correct Keys
-class getCorrectKeys(Resource):
-    def __call__(self):
-        print("In Call")
+# class getCorrectKeys(Resource):
+#     def __call__(self):
+#         print("In Call")
 
-    def post(self, businessId):
-        # Business Code sent in as a parameter from frontend
-        print("Step 1: Get Correct Keys")
-        print("business: ", businessId)
+#     def post(self, businessId):
+#         # Business Code sent in as a parameter from frontend
+#         print("Step 1: Get Correct Keys")
+#         print("business: ", businessId)
 
-        # FOR LOCAL TESTING
-        # print("In Local Testing")    
-        # if businessId == "M4ME":
-        #     PUBLISHABLE_KEY = "M4ME_STRIPE_LIVE_PUBLISHABLE_KEY"
-        #     SECRET_KEY = "M4ME_STRIPE_LIVE_SECRET_KEY"
-        # elif businessId == "M4METEST":
-        #     PUBLISHABLE_KEY = "pk_test_51HyqrgLMju5RPMEvtVH4G5lX2XoAjV9dTn0gE9dJ31UW4oy2joF7qjo3lP1Z90pADoMwIS9YY8UTyYfjxwdN1BrV007QZEgxtf"
-        #     SECRET_KEY = "sk_test_51HyqrgLMju5RPMEvwirVtSGoCPyU1IaorHsOI1Pr1ABkR8dEpk2MAWBAIT9ZHPtbWHhjvEFwP11jLVC4h7TZhdu000mBRlnir9"
-        # elif businessId == "NITYA":
-        #     PUBLISHABLE_KEY = "NITYA_STRIPE_LIVE_PUBLISHABLE_KEY"
-        #     SECRET_KEY = "NITYA_STRIPE_LIVE_SECRET_KEY"
-        # elif businessId == "NITYATEST":
-        #     PUBLISHABLE_KEY = "pk_test_51J0UzOLGBFAvIBPFJbfSOn5SboZ4sX5TOrklg3o45EQywUNwxTameQVrEF9BZfmcU6WtkUFVQ2xvASNLC6tVLhdK00E1kJtmzH"
-        #     SECRET_KEY = "sk_test_51J0UzOLGBFAvIBPFAm7Y5XGQ5APRxzzUeVJ1G1VdV010gW0bGzbDZsdM7fNeFDRs0WTenXV4Q9ANpztS7Y7ghtwb007quqRPZ3"
-        # elif businessId == "SF":
-        #     PUBLISHABLE_KEY = "SN_STRIPE_LIVE_PUBLISHABLE_KEY"
-        #     SECRET_KEY = "SN_STRIPE_LIVE_SECRET_KEY"
-        # elif businessId == "SFTEST":
-        #     PUBLISHABLE_KEY = "pk_test_6RSoSd9tJgB2fN2hGkEDHCXp00MQdrK3Tw",
-        #     SECRET_KEY = "sk_test_fe99fW2owhFEGTACgW3qaykd006gHUwj1j",
-        # elif businessId == "PM":
-        #     PUBLISHABLE_KEY = "PM_STRIPE_LIVE_PUBLISHABLE_KEY"
-        #     SECRET_KEY = "PM_STRIPE_LIVE_SECRET_KEY"
-        # elif businessId == "PMTEST":
-        #     PUBLISHABLE_KEY = "pk_test_51LiLgbAdqquNNobLdqsqIFwoOeEHHPIreP9mTR96BxYlpNvEwKGqTgUoRvifGpr3xvk0UhQqYgW1Y5MPcyDl1xNh00aEzp41ro"
-        #     SECRET_KEY = "sk_test_51LiLgbAdqquNNobLU7BiHIWUqfuDLXgYiYph8LmAb387UevA28B2YGOMFmhSNekAbz3yvI1XwKq8OIVK0ef75klh00Z38zfhYx"
-        # elif businessId == "IOPAYMENT":
-        #     PUBLISHABLE_KEY = "IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY"
-        #     SECRET_KEY = "IOPAYMENTS_STRIPE_LIVE_SECRET_KEY"
-        # elif businessId == "IOTEST":
-        #     PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
-        #     SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
-        # else:
-        #     PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
-        #     SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
+#         # FOR LOCAL TESTING
+#         # print("In Local Testing")    
+#         # if businessId == "M4ME":
+#         #     PUBLISHABLE_KEY = "M4ME_STRIPE_LIVE_PUBLISHABLE_KEY"
+#         #     SECRET_KEY = "M4ME_STRIPE_LIVE_SECRET_KEY"
+#         # elif businessId == "M4METEST":
+#         #     PUBLISHABLE_KEY = "pk_test_51HyqrgLMju5RPMEvtVH4G5lX2XoAjV9dTn0gE9dJ31UW4oy2joF7qjo3lP1Z90pADoMwIS9YY8UTyYfjxwdN1BrV007QZEgxtf"
+#         #     SECRET_KEY = "sk_test_51HyqrgLMju5RPMEvwirVtSGoCPyU1IaorHsOI1Pr1ABkR8dEpk2MAWBAIT9ZHPtbWHhjvEFwP11jLVC4h7TZhdu000mBRlnir9"
+#         # elif businessId == "NITYA":
+#         #     PUBLISHABLE_KEY = "NITYA_STRIPE_LIVE_PUBLISHABLE_KEY"
+#         #     SECRET_KEY = "NITYA_STRIPE_LIVE_SECRET_KEY"
+#         # elif businessId == "NITYATEST":
+#         #     PUBLISHABLE_KEY = "pk_test_51J0UzOLGBFAvIBPFJbfSOn5SboZ4sX5TOrklg3o45EQywUNwxTameQVrEF9BZfmcU6WtkUFVQ2xvASNLC6tVLhdK00E1kJtmzH"
+#         #     SECRET_KEY = "sk_test_51J0UzOLGBFAvIBPFAm7Y5XGQ5APRxzzUeVJ1G1VdV010gW0bGzbDZsdM7fNeFDRs0WTenXV4Q9ANpztS7Y7ghtwb007quqRPZ3"
+#         # elif businessId == "SF":
+#         #     PUBLISHABLE_KEY = "SN_STRIPE_LIVE_PUBLISHABLE_KEY"
+#         #     SECRET_KEY = "SN_STRIPE_LIVE_SECRET_KEY"
+#         # elif businessId == "SFTEST":
+#         #     PUBLISHABLE_KEY = "pk_test_6RSoSd9tJgB2fN2hGkEDHCXp00MQdrK3Tw",
+#         #     SECRET_KEY = "sk_test_fe99fW2owhFEGTACgW3qaykd006gHUwj1j",
+#         # elif businessId == "PM":
+#         #     PUBLISHABLE_KEY = "PM_STRIPE_LIVE_PUBLISHABLE_KEY"
+#         #     SECRET_KEY = "PM_STRIPE_LIVE_SECRET_KEY"
+#         # elif businessId == "PMTEST":
+#         #     PUBLISHABLE_KEY = "pk_test_51LiLgbAdqquNNobLdqsqIFwoOeEHHPIreP9mTR96BxYlpNvEwKGqTgUoRvifGpr3xvk0UhQqYgW1Y5MPcyDl1xNh00aEzp41ro"
+#         #     SECRET_KEY = "sk_test_51LiLgbAdqquNNobLU7BiHIWUqfuDLXgYiYph8LmAb387UevA28B2YGOMFmhSNekAbz3yvI1XwKq8OIVK0ef75klh00Z38zfhYx"
+#         # elif businessId == "IOPAYMENT":
+#         #     PUBLISHABLE_KEY = "IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY"
+#         #     SECRET_KEY = "IOPAYMENTS_STRIPE_LIVE_SECRET_KEY"
+#         # elif businessId == "IOTEST":
+#         #     PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
+#         #     SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
+#         # else:
+#         #     PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
+#         #     SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
 
-        # FOR LIVE TESTING
-        print("In Live Mode")
-        if businessId == "M4ME":
-            PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_LIVE_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("M4ME_STRIPE_LIVE_SECRET_KEY")
-        elif businessId == "M4METEST":
-            PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_TEST_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("M4ME_STRIPE_TEST_SECRET_KEY")
-        elif businessId == "NITYA":
-            PUBLISHABLE_KEY = os.environ.get("NITYA_STRIPE_LIVE_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("NITYA_STRIPE_LIVE_SECRET_KEY")
-        elif businessId == "NITYATEST":
-            PUBLISHABLE_KEY = os.environ.get("NITYA_STRIPE_TEST_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("NITYA_STRIPE_TEST_SECRET_KEY")
-        elif businessId == "SF":
-            PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_LIVE_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("SN_STRIPE_LIVE_SECRET_KEY")
-        elif businessId == "SFTEST":
-            PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_TEST_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("SN_STRIPE_TEST_SECRET_KEY")
-        elif businessId == "PM":
-            PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_LIVE_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("PM_STRIPE_LIVE_SECRET_KEY")
-        elif businessId == "PMTEST":
-            PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_TEST_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("PM_STRIPE_TEST_SECRET_KEY")
-        elif businessId == "IOPAYMENT":
-            PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_SECRET_KEY")
-        elif businessId == "IOTEST":
-            PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_PUBLISHABLE_KEY")
-            SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_SECRET_KEY")
-        else:
-            PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
-            SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
+#         # FOR LIVE TESTING
+#         print("In Live Mode")
+#         if businessId == "M4ME":
+#             PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_LIVE_PUBLISHABLE_KEY")
+#             SECRET_KEY = os.environ.get("M4ME_STRIPE_LIVE_SECRET_KEY")
+#         elif businessId == "M4METEST":
+#             PUBLISHABLE_KEY = os.environ.get("M4ME_STRIPE_TEST_PUBLISHABLE_KEY")
+#             SECRET_KEY = os.environ.get("M4ME_STRIPE_TEST_SECRET_KEY")
+#         elif businessId == "NITYA":
+#             PUBLISHABLE_KEY = os.environ.get("NITYA_STRIPE_LIVE_PUBLISHABLE_KEY")
+#             SECRET_KEY = os.environ.get("NITYA_STRIPE_LIVE_SECRET_KEY")
+#         elif businessId == "NITYATEST":
+#             PUBLISHABLE_KEY = os.environ.get("NITYA_STRIPE_TEST_PUBLISHABLE_KEY")
+#             SECRET_KEY = os.environ.get("NITYA_STRIPE_TEST_SECRET_KEY")
+#         elif businessId == "SF":
+#             PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_LIVE_PUBLISHABLE_KEY")
+#             SECRET_KEY = os.environ.get("SN_STRIPE_LIVE_SECRET_KEY")
+#         elif businessId == "SFTEST":
+#             PUBLISHABLE_KEY = os.environ.get("SN_STRIPE_TEST_PUBLISHABLE_KEY")
+#             SECRET_KEY = os.environ.get("SN_STRIPE_TEST_SECRET_KEY")
+#         elif businessId == "PM":
+#             PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_LIVE_PUBLISHABLE_KEY")
+#             SECRET_KEY = os.environ.get("PM_STRIPE_LIVE_SECRET_KEY")
+#         elif businessId == "PMTEST":
+#             PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_TEST_PUBLISHABLE_KEY")
+#             SECRET_KEY = os.environ.get("PM_STRIPE_TEST_SECRET_KEY")
+#         elif businessId == "IOPAYMENT":
+#             PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY")
+#             SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_LIVE_SECRET_KEY")
+#         elif businessId == "IOTEST":
+#             PUBLISHABLE_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_PUBLISHABLE_KEY")
+#             SECRET_KEY = os.environ.get("IOPAYMENTS_STRIPE_TEST_SECRET_KEY")
+#         elif businessId == "ACH":
+#             PUBLISHABLE_KEY = "pk_test_51NkKHkFXblfqA49hJnh8bdxgRzvhtaACstCkJQIO4Sq4szBeomcdKTCh4tsMbuc8SiATjA8IPqcwkvnLENclDZJX00TsjxpFYU"
+#             SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
+#         else:
+#             PUBLISHABLE_KEY = "pk_test_51IhynWGQZnKn7zmSUdovQOXLCxhKlTh2HvcosWHC9DRXYMMGHZTa510D16bXziGlgWsjY8jF5vKUn5W5s78kSoOu00wa0SR2JG"
+#             SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
 
 
-        print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
-        print("SECRET_KEY: ", SECRET_KEY)
-        stripe.api_key = SECRET_KEY
-        stripe.api_version = None
+#         print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
+#         print("SECRET_KEY: ", SECRET_KEY)
+#         stripe.api_key = SECRET_KEY
+#         stripe.api_version = None
 
-        return {"PUBLISHABLE_KEY": PUBLISHABLE_KEY, "SECRET_KEY": SECRET_KEY}
+#         return {"PUBLISHABLE_KEY": PUBLISHABLE_KEY, "SECRET_KEY": SECRET_KEY}
 
 
 # STEP 2: Create a Customer
-class createCustomerOnly(Resource):
-    def __call__(self):
-        print("In Call")
+# class createCustomerOnly(Resource):
+#     def __call__(self):
+#         print("In Call")
 
-    def get(self):
+#     def get(self):
 
-        # Create Payment Intent
-        # Create customer.  Need this step to save CC info
-        # Returns a Customer ID Created by Stripe
-        print("Step 2 createCustomerOnly")
-        PUBLISHABLE_KEY = "pk_test_51J0UzOLGBFAvIBPFJbfSOn5SboZ4sX5TOrklg3o45EQywUNwxTameQVrEF9BZfmcU6WtkUFVQ2xvASNLC6tVLhdK00E1kJtmzH"
-        print("stripe PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
-        SECRET_KEY = "sk_test_51J0UzOLGBFAvIBPFAm7Y5XGQ5APRxzzUeVJ1G1VdV010gW0bGzbDZsdM7fNeFDRs0WTenXV4Q9ANpztS7Y7ghtwb007quqRPZ3"
-        stripe.api_key = SECRET_KEY
-        print("stripe sk: ", stripe.api_key)
-        customer = stripe.Customer.create()
-        print("customer: ", customer)
-        customerId = customer.id
-        print("customer ID: ", customerId)
+#         # Create Payment Intent
+#         # Create customer.  Need this step to save CC info
+#         # Returns a Customer ID Created by Stripe
+#         print("Step 2 createCustomerOnly")
+#         PUBLISHABLE_KEY = "pk_test_51J0UzOLGBFAvIBPFJbfSOn5SboZ4sX5TOrklg3o45EQywUNwxTameQVrEF9BZfmcU6WtkUFVQ2xvASNLC6tVLhdK00E1kJtmzH"
+#         print("stripe PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
+#         SECRET_KEY = "sk_test_51J0UzOLGBFAvIBPFAm7Y5XGQ5APRxzzUeVJ1G1VdV010gW0bGzbDZsdM7fNeFDRs0WTenXV4Q9ANpztS7Y7ghtwb007quqRPZ3"
+#         stripe.api_key = SECRET_KEY
+#         print("stripe sk: ", stripe.api_key)
+#         customer = stripe.Customer.create()
+#         print("customer: ", customer)
+#         customerId = customer.id
+#         print("customer ID: ", customerId)
 
-        return customerId
-
-
-class createNewCustomer(Resource):
-    def __call__(self):
-        print("In Call")
-
-    def post(self, customer_uid):
-        # Customer UID sent in from frontend
-        print("Step 2 createNewCustomer")
-
-        # data = request.get_json(force=True)
-        # print("data: ", data)
-        # customerUid = data["customer_uid"]
-        print("customer: ", customer_uid)
-        print("stripe sk: ", stripe.api_key)
-        last4 = "No Key"
-
-        if len(stripe.api_key)>4:
-            last4 = stripe.api_key[-4:]
+#         return customerId
 
 
+# class createNewCustomer(Resource):
+#     def __call__(self):
+#         print("In Call")
 
-        # Check if Stripe does NOT already have the Customer UID
-        try:
-            # IF Stripe has the UID then it cannot create another customer with same UID THEN try will fail
-            # IF it does NOT have the UID then it will create the customer
+#     def post(self, customer_uid):
+#         # Customer UID sent in from frontend
+#         print("Step 2 createNewCustomer")
 
-            stripe.Customer.create(id=customer_uid)
-            print("New Customer ID created!", customer_uid)
-            newCustomer = True
-            # Send Email here
-            message = "New Customer created by Stripe! " + last4
-            SendEmail.get(self, message, customer_uid)
-        except:
-            # IF Stripe has the UID, it will retrieve the info and print it
-            print("Found Customer ID!")
-            stripe.Customer.retrieve(customer_uid)
-            # stripe.Customer.retrieve("cus_JKUnLFjlbjW2PG")
-            print("Customer Info: ", stripe.Customer.retrieve(customer_uid))
-            newCustomer = False
+#         # data = request.get_json(force=True)
+#         # print("data: ", data)
+#         # customerUid = data["customer_uid"]
+#         print("customer: ", customer_uid)
+#         print("stripe sk: ", stripe.api_key)
+#         last4 = "No Key"
 
-        return newCustomer
-        # return {"customer_uid": customer_uid, "newCustomer": newCustomer}
+#         if len(stripe.api_key)>4:
+#             last4 = stripe.api_key[-4:]
+
+
+
+#         # Check if Stripe does NOT already have the Customer UID
+#         try:
+#             # IF Stripe has the UID then it cannot create another customer with same UID THEN try will fail
+#             # IF it does NOT have the UID then it will create the customer
+
+#             stripe.Customer.create(id=customer_uid)
+#             print("New Customer ID created!", customer_uid)
+#             newCustomer = True
+#             # Send Email here
+#             message = "New Customer created by Stripe! " + last4
+#             SendEmail.get(self, message, customer_uid)
+#         except:
+#             # IF Stripe has the UID, it will retrieve the info and print it
+#             print("Found Customer ID!")
+#             stripe.Customer.retrieve(customer_uid)
+#             # stripe.Customer.retrieve("cus_JKUnLFjlbjW2PG")
+#             print("Customer Info: ", stripe.Customer.retrieve(customer_uid))
+#             newCustomer = False
+
+#         return newCustomer
+#         # return {"customer_uid": customer_uid, "newCustomer": newCustomer}
 
 
 # STEP 3: Create a Payment Intent
-class createPaymentIntentOnly(Resource):
-    def __call__(self):
-        print("In Call")
+# class createPaymentIntentOnly(Resource):
+#     def __call__(self):
+#         print("In Call")
 
-    def get(self):
+#     def get(self):
 
-        # Create Payment Intent
-        print("Step 3 - Get Request.  Values are hard coded")
-        intent = stripe.PaymentIntent.create(
-            amount=1099,
-            currency="usd",
-            # Verify your integration in this guide by including this parameter
-            # metadata={'integration_check': 'accept_a_payment'},
-            customer="100-000009",
-        )
-        print("intent: ", intent)
-        client_secret = intent.client_secret
-        # return {"secret": client_secret}
-        return client_secret
+#         # Create Payment Intent
+#         print("Step 3 - Get Request.  Values are hard coded")
+#         intent = stripe.PaymentIntent.create(
+#             amount=1099,
+#             currency="usd",
+#             # Verify your integration in this guide by including this parameter
+#             # metadata={'integration_check': 'accept_a_payment'},
+#             customer="100-000009",
+#         )
+#         print("intent: ", intent)
+#         client_secret = intent.client_secret
+#         # return {"secret": client_secret}
+#         return client_secret
 
-    def post(self, customer_uid, charge_amount):
+#     def post(self, customer_uid, charge_amount):
 
-        # Create Payment Intent with Customer ID
-        print("Step 3")
-        print("stripe sk: ", stripe.api_key)
-        # data = request.get_json(force=True)
-        # print("data: ", data)
-        intent = stripe.PaymentIntent.create(
-            amount=charge_amount,
-            currency="usd",
-            # Verify your integration in this guide by including this parameter
-            # metadata={'integration_check': 'accept_a_payment'},
-            # customer="cus_JKUnLFjlbjW2PG",
-            customer=customer_uid,
-            # customer='{{CUSTOMER_ID}}',
-            # payment_method="pm_1IhpoELMju5RPMEvq6B92VsG",
-            # payment_method='{{PAYMENT_METHOD_ID}}',
-            # off_session=True,
-            # confirm=True,
-        )
-        # Comment out print("intent: ", intent) to avoid excess CloudWatch entries
-        # print("intent: ", intent)
-        client_secret = intent.client_secret
-        # return {"secret": client_secret}
-        return client_secret
+#         # Create Payment Intent with Customer ID
+#         print("Step 3")
+#         print("stripe sk: ", stripe.api_key)
+#         # data = request.get_json(force=True)
+#         # print("data: ", data)
+#         intent = stripe.PaymentIntent.create(
+#             amount=charge_amount,
+#             currency="usd",
+#             # Verify your integration in this guide by including this parameter
+#             # metadata={'integration_check': 'accept_a_payment'},
+#             # customer="cus_JKUnLFjlbjW2PG",
+#             customer=customer_uid,
+#             # customer='{{CUSTOMER_ID}}',
+#             # payment_method="pm_1IhpoELMju5RPMEvq6B92VsG",
+#             # payment_method='{{PAYMENT_METHOD_ID}}',
+#             # off_session=True,
+#             # confirm=True,
+#         )
+#         # Comment out print("intent: ", intent) to avoid excess CloudWatch entries
+#         # print("intent: ", intent)
+#         client_secret = intent.client_secret
+#         # return {"secret": client_secret}
+#         return client_secret
 
 
 # STEP 1,2,3 COMBINED: Create a Payment Intent
-class createPaymentIntent(Resource):
-    def post(self):
+# class createPaymentIntent(Resource):
+#     def post(self):
 
-        data = request.get_json(force=True)
-        print("data: ", data)
-        customer_uid = data["customer_uid"]
-        businessId = data["business_code"]
-        charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
-        # print("customer: ", customer_uid)
-        # print("business: ", businessId)
-        # print("amount: ", charge_amount)
+#         data = request.get_json(force=True)
+#         print("data: ", data)
+#         customer_uid = data["customer_uid"]
+#         businessId = data["business_code"]
+#         charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
+#         # print("customer: ", customer_uid)
+#         # print("business: ", businessId)
+#         # print("amount: ", charge_amount)
 
-        print("\nIn Step 1")
-        keys = getCorrectKeys.post(self, businessId)
-        print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
-
-
-        print("\nIn Step 2")
-        if customer_uid == "":
-            # Send email here
-            message = "No Customer ID sent"
-            SendEmail.get(self, message, data)
-            customer = stripe.Customer.create()
-            customer_uid = customer.id
-            print("Created New Customer ID: ", customer_uid)
-
-        newCustomer = createNewCustomer.post(self, customer_uid)
-        # print(newCustomer)
-        print("customer_uid: ", customer_uid)
+#         print("\nIn Step 1")
+#         keys = getCorrectKeys.post(self, businessId)
+#         print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
 
 
-        print("\nIn Step 3")
-        try: 
-            paymentIntent = createPaymentIntentOnly.post(self, customer_uid, charge_amount)
-            print(paymentIntent)
-        except: 
-            # Send email here
-            message = "Payment Intent could not be created"
-            SendEmail.get(self, message, data)
-            print("Error Occurred")
-            paymentIntent = "Notify customer that system is down"
+#         print("\nIn Step 2")
+#         if customer_uid == "":
+#             # Send email here
+#             message = "No Customer ID sent"
+#             SendEmail.get(self, message, data)
+#             customer = stripe.Customer.create()
+#             customer_uid = customer.id
+#             print("Created New Customer ID: ", customer_uid)
 
-        return paymentIntent
+#         newCustomer = createNewCustomer.post(self, customer_uid)
+#         # print(newCustomer)
+#         print("customer_uid: ", customer_uid)
+
+
+#         print("\nIn Step 3")
+#         try: 
+#             paymentIntent = createPaymentIntentOnly.post(self, customer_uid, charge_amount)
+#             print(paymentIntent)
+#         except: 
+#             # Send email here
+#             message = "Payment Intent could not be created"
+#             SendEmail.get(self, message, data)
+#             print("Error Occurred")
+#             paymentIntent = "Notify customer that system is down"
+
+#         return paymentIntent
 
 
 # Step 4: Payment method with card and billing details entirely on the Front End
@@ -676,6 +685,11 @@ api.add_resource(refund, "/api/v2/refund")
 api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
 
 api.add_resource(SendEmail, "/api/v2/sendEmail/<string:message>,<string:data>")
+
+api.add_resource(createACHPaymentIntent, "/api/v2/createACHPaymentIntent")
+api.add_resource(retrieve, "/api/v2/status")
+api.add_resource(status, "/api/v2/status")
+api.add_resource(webhook, "/api/v2/webhook")
 
 
 if __name__ == "__main__":
