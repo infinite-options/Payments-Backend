@@ -687,7 +687,7 @@ api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
 api.add_resource(SendEmail, "/api/v2/sendEmail/<string:message>,<string:data>")
 
 api.add_resource(createACHPaymentIntent, "/api/v2/createACHPaymentIntent")
-api.add_resource(retrieve, "/api/v2/status")
+api.add_resource(retrieve, "/api/v2/retrieve")
 api.add_resource(status, "/api/v2/status")
 api.add_resource(webhook, "/api/v2/webhook")
 
