@@ -61,6 +61,10 @@ class createACHPaymentIntent(Resource):
         print("Step 2")
         # data = request.get_json(force=True)
         # print("data: ", data)
+        amount = data["payment_summary"]["total"]
+        amount = float(amount)
+        amount = 100*amount
+        amount = int(amount)
         customerUid = data["customer_uid"]
         print("customer: ", customerUid)
 
@@ -162,13 +166,15 @@ class createACHPaymentIntent(Resource):
         # )
         # print("intent: ", intent)
         intent = stripe.PaymentIntent.create(
-            amount=1099,
+            amount=amount,
             currency="usd",
             setup_future_usage="off_session",
             customer= customerUid,
             payment_method_types=["us_bank_account"],
             payment_method_options={
                 "us_bank_account": {
+                    "verification_method": "instant",
+                    "preferred_settlement_speed": "fastest",
                     "financial_connections": {"permissions": ["payment_method", "balances"]},
                 },
             },
@@ -177,4 +183,41 @@ class createACHPaymentIntent(Resource):
         # return {"secret": client_secret}
         return client_secret
 
+class verifyACH(Resource):
+    def post(self):
+        data = request.get_json(force=True)
+        SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
+        stripe.api_key = SECRET_KEY
+        customer_Uid = data["customer_uid"]
+        pay_method = data["payment_method"]
+        payment_intent_id = data["payment_intent_id"]
+        stripe.api_version = None
+        stripe.PaymentMethod.attach(
+            pay_method,
+            customer= customer_Uid,
+        )
+        stripe.PaymentIntent.confirm(payment_intent_id, payment_method = pay_method,setup_future_usage="off_session", mandate_data = "")
 
+class retrieve(Resource):
+    def post(self):
+        SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
+        stripe.api_key = SECRET_KEY
+
+        stripe.PaymentIntent.retrieve(
+            "pi_3NmVhEFXblfqA49h1EOFW8oO",
+        )
+
+class status(Resource):
+    def post(self):
+        SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
+        stripe.api_key = SECRET_KEY
+
+        res = stripe.PaymentIntent.retrieve(
+            "pi_3NmVhEFXblfqA49h1EOFW8oO",
+        )
+
+        result = res["processing"]
+
+        return result
+
+#Get Status of payment Endpoint
