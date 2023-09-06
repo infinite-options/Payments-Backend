@@ -11,7 +11,8 @@ from getKey import getCorrectKeys
 from getCustomer import createNewCustomer
 
 
-endpoint_secret = 'whsec_e2dd3d23456d8a53a6b52cb4744001122c1c9202f25ee09353e08c3933982317'
+# endpoint_secret = 'whsec_e2dd3d23456d8a53a6b52cb4744001122c1c9202f25ee09353e08c3933982317'
+endpoint_secret = 'whsec_ABNMy16Qg0QPNJUOn0e1iwKsQiupT1KA'
 
 class createACHPaymentIntent(Resource):
     def post(self):
@@ -83,7 +84,7 @@ class createACHPaymentIntent(Resource):
         if customer_uid == "":
             # Send email here
             message = "No Customer ID sent"
-            SendEmail.get(self, message, data)
+            # SendEmail.get(self, message, data)
             customer = stripe.Customer.create()
             customer_uid = customer.id
             print("Created New Customer ID: ", customer_uid)

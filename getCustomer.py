@@ -67,7 +67,8 @@ class createNewCustomer(Resource):
             newCustomer = True
             # Send Email here
             message = "New Customer created by Stripe! " + last4
-            SendEmail.get(self, message, customer_uid)
+            return newCustomer, message, customer_uid
+            # SendEmail.get(self, message, customer_uid)
         except:
             # IF Stripe has the UID, it will retrieve the info and print it
             print("Found Customer ID!")
