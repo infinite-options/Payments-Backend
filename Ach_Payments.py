@@ -7,6 +7,8 @@ from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS
 
+endpoint_secret = 'whsec_e2dd3d23456d8a53a6b52cb4744001122c1c9202f25ee09353e08c3933982317'
+
 class createACHPaymentIntent(Resource):
     def post(self):
         # Step 1
@@ -203,8 +205,8 @@ class retrieve(Resource):
         SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
         stripe.api_key = SECRET_KEY
 
-        stripe.PaymentIntent.retrieve(
-            "pi_3NmVhEFXblfqA49h1EOFW8oO",
+        return stripe.PaymentIntent.retrieve(
+            "pi_3Nn2ojFXblfqA49h0ilVv2g7",
         )
 
 class status(Resource):
@@ -213,11 +215,45 @@ class status(Resource):
         stripe.api_key = SECRET_KEY
 
         res = stripe.PaymentIntent.retrieve(
-            "pi_3NmVhEFXblfqA49h1EOFW8oO",
+            "pi_3NmOlLFXblfqA49h27hZRIU3",
         )
 
-        result = res["processing"]
+        result = res["status"]
 
         return result
+
+class webhook(Resource):
+    def post(self):
+        event = None
+        SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
+        stripe.api_key = SECRET_KEY
+        payload = request.data
+        sig_header = request.headers['STRIPE_SIGNATURE']
+
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, endpoint_secret
+            )
+        except ValueError as e:
+            # Invalid payload
+            raise e
+        except stripe.error.SignatureVerificationError as e:
+            # Invalid signature
+            raise e
+
+        # Handle the event
+        if event['type'] == 'payment_intent.created':
+            payment_intent = event['data']['object']
+        elif event['type'] == 'payment_intent.processing':
+            payment_intent = event['data']['object']
+        elif event['type'] == 'payment_intent.requires_action':
+            payment_intent = event['data']['object']
+        elif event['type'] == 'payment_intent.succeeded':
+            payment_intent = event['data']['object']
+        # ... handle other event types
+        else:
+            print('Unhandled event type {}'.format(event['type']))
+
+        return jsonify(success=True)
 
 #Get Status of payment Endpoint
