@@ -23,11 +23,7 @@ from flask_mail import Mail, Message
 from email import message
 
 from getKey import getCorrectKeys
-from getCustomer import createCustomerOnly, createNewCustomer
-from STRIPE_payments_api import createPaymentIntentOnly, createPaymentIntent
-from ACH_payments import createACHPaymentIntent
 from ACH_payments import verifyACH, retrieve, status, webhook
-
 
 
 app = Flask(__name__)
@@ -81,8 +77,8 @@ class SendEmail(Resource):
             # conn = connect()
             # message = "test"
             # print("first email sent")
-            print("Message to send: ", message)
-            print("Data to send: ", data, type(data))
+            # print("Message to send: ", message)
+            # print("Data to send: ", data, type(data))
 
 
             # Send email to Host            
@@ -99,7 +95,7 @@ class SendEmail(Resource):
                     sender="support@infiniteoptions.com",
                     recipients=["pmarathay@gmail.com"],
                 )
-            print(msg)
+            # print(msg)
 
             msg.body = (
                 "Hi !\n\n"
@@ -117,7 +113,7 @@ class SendEmail(Resource):
             # print(msg)
             # print('msg-bd----', msg.body)
             mail.send(msg)
-            print('\nafter mail send')
+            # print('\nafter mail send')
 
             # # Send email to Sender
             # msg2 = Message(
@@ -147,17 +143,164 @@ class SendEmail(Resource):
             return 'Email NOT Sent.  Email will not be sent if in Local Mode'
 
 
-# STEP 1: Setup Stripe
-# Get the correct Keys
+# STEP 1: Setup Stripe - Get the correct Keys
 
 
 # STEP 2: Create a Customer
+class createCustomerOnly(Resource):
+    def __call__(self):
+        print("In Call")
 
+    def get(self):
+
+        # Create Payment Intent
+        # Create customer.  Need this step to save CC info
+        # Returns a Customer ID Created by Stripe
+        # print("Step 2 createCustomerOnly")
+        PUBLISHABLE_KEY = "pk_test_51J0UzOLGBFAvIBPFJbfSOn5SboZ4sX5TOrklg3o45EQywUNwxTameQVrEF9BZfmcU6WtkUFVQ2xvASNLC6tVLhdK00E1kJtmzH"
+        # print("stripe PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
+        SECRET_KEY = "sk_test_51J0UzOLGBFAvIBPFAm7Y5XGQ5APRxzzUeVJ1G1VdV010gW0bGzbDZsdM7fNeFDRs0WTenXV4Q9ANpztS7Y7ghtwb007quqRPZ3"
+        stripe.api_key = SECRET_KEY
+        # print("stripe sk: ", stripe.api_key)
+        customer = stripe.Customer.create()
+        # print("customer: ", customer)
+        customerId = customer.id
+        # print("customer ID: ", customerId)
+
+        return customerId
+
+
+class createNewCustomer(Resource):
+    def __call__(self):
+        print("In Call")
+
+    def post(self, customer_uid):
+        # Customer UID sent in from frontend
+        print("Step 2 createNewCustomer")
+
+        # data = request.get_json(force=True)
+        # print("data: ", data)
+        # customerUid = data["customer_uid"]
+        # print("customer: ", customer_uid)
+        # print("stripe sk: ", stripe.api_key)
+        last4 = "No Key"
+
+        if len(stripe.api_key)>4:
+            last4 = stripe.api_key[-4:]
+
+
+        # Check if Stripe does NOT already have the Customer UID
+        try:
+            # IF Stripe has the UID then it cannot create another customer with same UID THEN try will fail
+            # IF it does NOT have the UID then it will create the customer
+            stripe.Customer.create(id=customer_uid)
+            print("New Customer ID created!", customer_uid)
+            newCustomer = True
+            # Send Email here
+            message = "New Customer created by Stripe! " + last4
+            SendEmail.get(self, message, customer_uid)
+        except:
+            # IF Stripe has the UID, it will retrieve the info and print it
+            print("Found Customer ID!")
+            stripe.Customer.retrieve(customer_uid)
+            # stripe.Customer.retrieve("cus_JKUnLFjlbjW2PG")
+            # print("Customer Info: ", stripe.Customer.retrieve(customer_uid))
+            newCustomer = False
+
+        return newCustomer
+        # return {"customer_uid": customer_uid, "newCustomer": newCustomer}
 
 # STEP 3: Create a Payment Intent
+class createPaymentIntentOnly(Resource):
+    def __call__(self):
+        print("In Call")
+
+    def get(self):
+
+        # Create Payment Intent
+        print("Step 3 - Get Request.  Values are hard coded")
+        intent = stripe.PaymentIntent.create(
+            amount=1099,
+            currency="usd",
+            # Verify your integration in this guide by including this parameter
+            # metadata={'integration_check': 'accept_a_payment'},
+            customer="100-000009",
+        )
+        print("intent: ", intent)
+        client_secret = intent.client_secret
+        # return {"secret": client_secret}
+        return client_secret
+
+    def post(self, customer_uid, charge_amount):
+
+        # Create Payment Intent with Customer ID
+        print("Step 3")
+        # print("stripe sk: ", stripe.api_key)
+        # data = request.get_json(force=True)
+        # print("data: ", data)
+        intent = stripe.PaymentIntent.create(
+            amount=charge_amount,
+            currency="usd",
+            # Verify your integration in this guide by including this parameter
+            # metadata={'integration_check': 'accept_a_payment'},
+            # customer="cus_JKUnLFjlbjW2PG",
+            customer=customer_uid,
+            # customer='{{CUSTOMER_ID}}',
+            # payment_method="pm_1IhpoELMju5RPMEvq6B92VsG",
+            # payment_method='{{PAYMENT_METHOD_ID}}',
+            # off_session=True,
+            # confirm=True,
+        )
+        # Comment out print("intent: ", intent) to avoid excess CloudWatch entries
+        # print("intent: ", intent)
+        client_secret = intent.client_secret
+        # return {"secret": client_secret}
+        return client_secret
+
+# STEP 1,2,3 COMBINED: Create a STRIPE Payment Intent
+class createPaymentIntent(Resource):
+    def post(self):
+
+        data = request.get_json(force=True)
+        # print("data: ", data)
+        customer_uid = data["customer_uid"]
+        businessId = data["business_code"]
+        charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
+        # print("customer: ", customer_uid)
+        # print("business: ", businessId)
+        # print("amount: ", charge_amount)
+
+        print("\nIn Step 1")
+        keys = getCorrectKeys.post(self, businessId)
+        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
 
 
-# STEP 1,2,3 COMBINED: Create a Payment Intent
+        print("\nIn Step 2")
+        if customer_uid == "":
+            # Send email here
+            message = "No Customer ID sent"
+            SendEmail.get(self, message, data)
+            customer = stripe.Customer.create()
+            customer_uid = customer.id
+            print("Created New Customer ID: ", customer_uid)
+
+        newCustomer = createNewCustomer.post(self, customer_uid)
+        # print(newCustomer)
+        print("customer_uid: ", customer_uid)
+
+
+        print("\nIn Step 3")
+        try: 
+            paymentIntent = createPaymentIntentOnly.post(self, customer_uid, charge_amount)
+            # print(paymentIntent)
+        except: 
+            # Send email here
+            message = "Payment Intent could not be created"
+            SendEmail.get(self, message, data)
+            print("Error Occurred")
+            paymentIntent = "Notify customer that system is down"
+
+        return paymentIntent
 
 
 # Step 4: Payment method with card and billing details entirely on the Front End
@@ -171,20 +314,20 @@ class createOffSessionPaymentIntent(Resource):
     def post(self):
 
         data = request.get_json(force=True)
-        print("\ndata: ", data)
+        # print("\ndata: ", data)
         customer_uid = data["customer_uid"]
         businessId = data["business_code"]
         charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
-        print("customer: ", customer_uid)
-        print("business: ", businessId)
-        print("amount: ", charge_amount)
+        # print("customer: ", customer_uid)
+        # print("business: ", businessId)
+        # print("amount: ", charge_amount)
 
         print("\nIn Step 1")
         keys = getCorrectKeys.post(self, businessId)
-        print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
-        print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
+        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+        # print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
-        print("stripe api key: ", stripe.api_key)
+        # print("stripe api key: ", stripe.api_key)
         stripe.api_version = None
 
         print("\nIn Step 6")
@@ -208,19 +351,79 @@ class createOffSessionPaymentIntent(Resource):
             confirm=True,
         )
 
-        print("\nPayment Intent: ", intent.id)
-        print("Payment Intent with Secret: ", intent.client_secret)
-        print("Charge ID: ", intent.charges.data[0].id)
-        print("\nintent: ", intent)
+        # print("\nPayment Intent: ", intent.id)
+        # print("Payment Intent with Secret: ", intent.client_secret)
+        # print("Charge ID: ", intent.charges.data[0].id)
+        # print("\nintent: ", intent)
         chargeId = intent.charges.data[0].id
         client_secret = intent.client_secret
         # return {"secret": client_secret}
         return chargeId
 
+# STEP 1,2,3 COMBINED: Create a ACH Payment Intent
+endpoint_secret = 'whsec_ABNMy16Qg0QPNJUOn0e1iwKsQiupT1KA'
+
+class createACHPaymentIntent(Resource):
+    def post(self):
+
+        data = request.get_json(force=True)
+        # print("data: ", data)
+        customer_uid = data["customer_uid"]
+        businessId = data["business_code"]
+        charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
+        # print("customer: ", customer_uid)
+        # print("business: ", businessId)
+        # print("amount: ", charge_amount)
+
+        # Step 1
+        # Customer UID sent in from frontend
+        print("\nIn Step 1")
+        keys = getCorrectKeys.post(self, businessId)
+        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+        stripe.api_key = keys["SECRET_KEY"]
+        stripe.api_version = None
+        
+
+        # STEP 2
+        # Customer UID sent in from frontend  
+        print("\nIn Step 2")
+        if customer_uid == "":
+            # Send email here
+            message = "No Customer ID sent"
+            SendEmail.get(self, message, data)
+            customer = stripe.Customer.create()
+            customer_uid = customer.id
+            print("Created New Customer ID: ", customer_uid)
+
+        newCustomer = createNewCustomer.post(self, customer_uid)
+        # print(newCustomer)
+        # print("customer_uid: ", customer_uid)
+
+
+        # Step 3
+        # Create Payment Intent with Customer ID
+        print("Step 3")
+        intent = stripe.PaymentIntent.create(
+            amount=charge_amount,
+            currency="usd",
+            setup_future_usage="off_session",
+            customer= customer_uid,
+            payment_method_types=["us_bank_account"],
+            payment_method_options={
+                "us_bank_account": {
+                    "verification_method": "instant",
+                    "preferred_settlement_speed": "fastest",
+                    "financial_connections": {"permissions": ["payment_method", "balances"]},
+                },
+            },
+        )
+        client_secret = intent.client_secret
+        # return {"secret": client_secret}
+        return client_secret
 
 
 
-# Retrieve Stripe Info - Utilities
+# Retrieve Stripe Info - STRIPE Utilities
 class retrieveStripeCharge(Resource):
     def post(self):
 
@@ -229,14 +432,14 @@ class retrieveStripeCharge(Resource):
         customer_uid = data["customer_uid"]
         businessId = data["business_code"]
         charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
-        print("customer: ", customer_uid)
-        print("business: ", businessId)
-        print("amount: ", charge_amount)
+        # print("customer: ", customer_uid)
+        # print("business: ", businessId)
+        # print("amount: ", charge_amount)
 
         print("\nIn Step 1")
         keys = getCorrectKeys.post(self, businessId)
-        print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
-        print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
+        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+        # print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
         print("stripe api key: ", stripe.api_key)
         stripe.api_version = None
@@ -285,8 +488,8 @@ class retrieveLast4(Resource):
 
         print("\nIn Step 1: Get Stripe Keys")
         keys = getCorrectKeys.post(self, businessId)
-        print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
-        print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
+        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+        # print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
         print("stripe api key: ", stripe.api_key)
         stripe.api_version = None
@@ -322,8 +525,8 @@ class refund(Resource):
 
         print("\nIn Step 1")
         keys = getCorrectKeys.post(self, businessId)
-        print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
-        print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
+        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+        # print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
         print("stripe api key: ", stripe.api_key)
         stripe.api_version = None
@@ -419,6 +622,7 @@ class customerList(Resource):
         print("Finished")
 
         return(customer_list)
+
 
 
 # Define API routes

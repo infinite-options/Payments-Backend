@@ -100,8 +100,8 @@ class getCorrectKeys(Resource):
             SECRET_KEY = "sk_test_51IhynWGQZnKn7zmSUZDTXIaOoxawY7QO0FeLhOdSxFs5wCi1wjzS09u2vD20Yl5TiZ4rqQulzvbJGsw1lRtvoxG600NxkSdgGx"
 
 
-        print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
-        print("SECRET_KEY: ", SECRET_KEY)
+        # print("PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
+        # print("SECRET_KEY: ", SECRET_KEY)
         stripe.api_key = SECRET_KEY
         stripe.api_version = None
 
