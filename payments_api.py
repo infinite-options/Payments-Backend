@@ -15,7 +15,7 @@ import os
 import requests
 import datetime
 
-from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask import Flask, render_template, jsonify, request, send_from_directory, redirect, Response
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_mail import Mail, Message
@@ -422,6 +422,79 @@ class createACHPaymentIntent(Resource):
         return client_secret
 
 
+class createEasyACHPaymentIntent(Resource):
+    def post(self):
+        print("in create checkout session")
+
+        data = request.get_json(force=True)
+        # print("\ndata: ", data)
+        customer_uid = data["customer_uid"]
+        businessId = data["business_code"]
+        charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
+        # print("customer: ", customer_uid)
+        # print("business: ", businessId)
+        # print("amount: ", charge_amount)
+
+        # Step 1
+        # Customer UID sent in from frontend
+        print("\nIn Step 1")
+        keys = getCorrectKeys.post(self, businessId)
+        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+        stripe.api_key = keys["SECRET_KEY"]
+        stripe.api_version = None
+        
+
+        # STEP 2
+        # Customer UID sent in from frontend  
+        print("\nIn Step 2")
+        if customer_uid == "":
+            # Send email here
+            message = "No Customer ID sent"
+            SendEmail.get(self, message, data)
+            customer = stripe.Customer.create()
+            customer_uid = customer.id
+            print("Created New Customer ID: ", customer_uid)
+
+        newCustomer = createNewCustomer.post(self, customer_uid)
+        # print(newCustomer)
+        # print("customer_uid: ", customer_uid)
+
+
+        # Step 3
+        # Create Payment Intent with Customer ID
+        print("Step 3")
+        try:
+            print("in try")
+            checkout_session = stripe.checkout.Session.create(
+                mode="payment",
+                customer=customer_uid,
+                payment_method_types=["card", "us_bank_account"],
+                payment_method_options={
+                    "us_bank_account": {
+                        "financial_connections": {"permissions": ["payment_method"]}
+                    },
+                },
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": "usd",
+                            "unit_amount": charge_amount,
+                            "product_data": {"name": "T-shirt"},
+                        },
+                        "quantity": 1,
+                    },
+                ],
+                success_url="https://iopropertymanagement.netlify.app/tenantDashboard",
+                cancel_url="https://www.cnn.com/",
+            )
+        except Exception as e:
+            return str(e)
+
+        # return redirect(checkout_session.url, code=303)
+        return Response(checkout_session.url, status=201, mimetype="application/json")
+
+
+
 
 # Retrieve Stripe Info - STRIPE Utilities
 class retrieveStripeCharge(Resource):
@@ -641,6 +714,7 @@ api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
 api.add_resource(SendEmail, "/api/v2/sendEmail/<string:message>,<string:data>")
 
 api.add_resource(createACHPaymentIntent, "/api/v2/createACHPaymentIntent")
+api.add_resource(createEasyACHPaymentIntent, "/api/v2/createEasyACHPaymentIntent")
 api.add_resource(retrieve, "/api/v2/retrieve")
 api.add_resource(status, "/api/v2/status")
 api.add_resource(webhook, "/api/v2/webhook")
