@@ -104,6 +104,7 @@ class webhook(Resource):
         stripe.api_key = SECRET_KEY
         payload = request.data
         sig_header = request.headers['STRIPE_SIGNATURE']
+        endpoint_secret = 'whsec_ABNMy16Qg0QPNJUOn0e1iwKsQiupT1KA'
 
         try:
             event = stripe.Webhook.construct_event(
