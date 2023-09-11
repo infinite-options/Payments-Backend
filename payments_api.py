@@ -468,7 +468,8 @@ class createEasyACHPaymentIntent(Resource):
             checkout_session = stripe.checkout.Session.create(
                 mode="payment",
                 customer=customer_uid,
-                payment_method_types=["card", "us_bank_account"],
+                # payment_method_types=["card", "us_bank_account"],
+                payment_method_types=["us_bank_account"],
                 payment_method_options={
                     "us_bank_account": {
                         "financial_connections": {"permissions": ["payment_method"]}
