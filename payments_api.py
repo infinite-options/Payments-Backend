@@ -472,7 +472,7 @@ class createEasyACHPaymentIntent(Resource):
                 payment_method_types=["us_bank_account"],
                 payment_method_options={
                     "us_bank_account": {
-                        "financial_connections": {"permissions": ["payment_method"]}
+                        "financial_connections": {"permissions": ["payment_method","balances"]}
                     },
                 },
                 line_items=[
