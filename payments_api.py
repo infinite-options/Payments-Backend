@@ -175,8 +175,10 @@ class createNewCustomer(Resource):
         print("In Call")
 
     def post(self, customer_uid):
+        print("Test")
         # Customer UID sent in from frontend
-        print("Step 2 createNewCustomer")
+        print("Step 2 createNewCustomer!")
+        print("Step 2 customer_uid: ", customer_uid)
 
         # data = request.get_json(force=True)
         # print("data: ", data)
@@ -184,9 +186,12 @@ class createNewCustomer(Resource):
         # print("customer: ", customer_uid)
         # print("stripe sk: ", stripe.api_key)
         last4 = "No Key"
+        print("Last4: ", last4)
 
         if len(stripe.api_key)>4:
+            print("In If Statement")
             last4 = stripe.api_key[-4:]
+            print("Updated Last4: ", last4)
 
 
         # Check if Stripe does NOT already have the Customer UID
@@ -262,17 +267,17 @@ class createPaymentIntent(Resource):
     def post(self):
 
         data = request.get_json(force=True)
-        # print("data: ", data)
+        print("data: ", data)
         customer_uid = data["customer_uid"]
         businessId = data["business_code"]
         charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
-        # print("customer: ", customer_uid)
-        # print("business: ", businessId)
-        # print("amount: ", charge_amount)
+        print("customer: ", customer_uid)
+        print("business: ", businessId)
+        print("amount: ", charge_amount)
 
         print("\nIn Step 1")
         keys = getCorrectKeys.post(self, businessId)
-        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+        print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
 
 
         print("\nIn Step 2")
@@ -284,15 +289,16 @@ class createPaymentIntent(Resource):
             customer_uid = customer.id
             print("Created New Customer ID: ", customer_uid)
 
+        print("Just before createNewCustomer Call")
         newCustomer = createNewCustomer.post(self, customer_uid)
-        # print(newCustomer)
+        print(newCustomer)
         print("customer_uid: ", customer_uid)
 
 
         print("\nIn Step 3")
         try: 
             paymentIntent = createPaymentIntentOnly.post(self, customer_uid, charge_amount)
-            # print(paymentIntent)
+            print(paymentIntent)
         except: 
             # Send email here
             message = "Payment Intent could not be created"
