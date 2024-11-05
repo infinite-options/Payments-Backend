@@ -485,9 +485,14 @@ class createEasyACHPaymentIntent(Resource):
                         "quantity": 1,
                     },
                 ],
-                success_url="https://iopropertymanagement.netlify.app/tenantDashboard",
+                # success_url="https://iopropertymanagement.netlify.app/tenantDashboard",
+                success_url="https://iopropertymanagement.netlify.app/PaymentConfirmation",
                 cancel_url="https://www.cnn.com/",
+
             )
+
+            # add entry to PAYMENTS table and Update PURCHASES table
+            # Could MakePayment work?
         except Exception as e:
             return str(e)
 
