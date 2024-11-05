@@ -423,6 +423,19 @@ class createACHPaymentIntent(Resource):
 
 
 class createEasyACHPaymentIntent(Resource):
+    def get(self, session_id):
+        print("In createEasyACHPaymentIntent GET")
+        print(session_id)
+
+        checkout_session = stripe.checkout.Session.retrieve(session_id)
+        print(checkout_session)
+        print(checkout_session.payment_intent)
+
+        ACH_pi = stripe.PaymentIntent.retrieve(checkout_session.payment_intent)
+        print(ACH_pi)
+
+        return Response(ACH_pi, status=200, mimetype="application/json")
+
     def post(self):
         print("in create checkout session")
 
@@ -736,7 +749,8 @@ api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
 api.add_resource(SendEmail, "/api/v2/sendEmail/<string:message>,<string:data>")
 
 api.add_resource(createACHPaymentIntent, "/api/v2/createACHPaymentIntent")
-api.add_resource(createEasyACHPaymentIntent, "/api/v2/createEasyACHPaymentIntent")
+api.add_resource(createEasyACHPaymentIntent, "/api/v2/createEasyACHPaymentIntent/<string:session_id>",  "/api/v2/createEasyACHPaymentIntent")
+
 api.add_resource(retrieve, "/api/v2/retrieve")
 api.add_resource(status, "/api/v2/status")
 api.add_resource(webhook, "/api/v2/webhook")
