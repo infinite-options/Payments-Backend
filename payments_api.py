@@ -491,13 +491,29 @@ class createEasyACHPaymentIntent(Resource):
 
             )
 
+            print("checkout_session: ", checkout_session)
+            print("checkout_session id: ", checkout_session.id)
+
+            ACH_info = json.dumps({"id": checkout_session.id, "url": checkout_session.url})
+            print("ACH INFO: ", ACH_info)
+
             # add entry to PAYMENTS table and Update PURCHASES table
             # Could MakePayment work?
         except Exception as e:
             return str(e)
 
         # return redirect(checkout_session.url, code=303)
-        return Response(checkout_session.url, status=201, mimetype="application/json")
+        # return Response(checkout_session.url, status=201, mimetype="application/json")
+        return Response(ACH_info, status=201, mimetype="application/json")
+        # return jsonify({
+        # "id": checkout_session.id,
+        # "url": checkout_session.url
+        # }), 201
+    
+        # return jsonify({"id": checkout_session.id, "url": checkout_session.url}), 201
+        # return Response(jsonify({"id": checkout_session.id, "url": checkout_session.url}), status=201, mimetype="application/json")
+
+
 
 
 
