@@ -517,7 +517,8 @@ class createEasyACHPaymentIntent(Resource):
                     },
                 ],
                 # success_url="https://iopropertymanagement.netlify.app/tenantDashboard",
-                success_url="https://iopropertymanagement.netlify.app/PaymentConfirmation",
+                # success_url="https://iopropertymanagement.netlify.app/PaymentConfirmation",
+                success_url="http://localhost:3000/PaymentConfirmation",
                 cancel_url="https://www.cnn.com/",
 
             )
