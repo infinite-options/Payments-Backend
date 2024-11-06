@@ -445,7 +445,7 @@ class createEasyACHPaymentIntent(Resource):
         if(checkout_session.payment_intent not in {None, '', 'null'}):
             ACH_pi = stripe.PaymentIntent.retrieve(checkout_session.payment_intent)
             print(ACH_pi)
-            ACH_info = json.dumps({"id": checkout_session.id, "status": ACH_pi.status, "payment_method": ACH_pi.payment_method, "client_secret": ACH_pi.client_secret, "receipt_url": ACH_pi.receipt_url})
+            ACH_info = json.dumps({"id": checkout_session.id, "status": ACH_pi.status, "payment_method": ACH_pi.payment_method, "client_secret": ACH_pi.client_secret})
             print("ACH INFO: ", ACH_info)
 
             # return Response(ACH_pi.status, status=200, mimetype="application/json")
