@@ -423,8 +423,8 @@ class createACHPaymentIntent(Resource):
 
 
 class createEasyACHPaymentIntent(Resource):
-    def get(self):
-        print("In createEasyACHPaymentIntent GET")
+    def put(self):
+        print("In createEasyACHPaymentIntent PUT")
 
         payload = request.get_json()
         print(payload)
@@ -445,11 +445,14 @@ class createEasyACHPaymentIntent(Resource):
         if(checkout_session.payment_intent not in {None, '', 'null'}):
             ACH_pi = stripe.PaymentIntent.retrieve(checkout_session.payment_intent)
             print(ACH_pi)
+            ACH_info = json.dumps({"id": checkout_session.id, "status": ACH_pi.status, "payment_method": ACH_pi.payment_method, "client_secret": ACH_pi.client_secret, "receipt_url": ACH_pi.receipt_url})
+            print("ACH INFO: ", ACH_info)
 
-            return Response(ACH_pi, status=200, mimetype="application/json")
+            # return Response(ACH_pi.status, status=200, mimetype="application/json")
+            return Response(ACH_info, status=200, mimetype="application/json")
         
         else:
-            return 
+            return("No ACH Session Id")
 
     def post(self):
         print("in create checkout session")
