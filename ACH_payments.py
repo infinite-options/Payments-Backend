@@ -102,15 +102,15 @@ class webhook(Resource):
         event = None
         SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
         stripe.api_key = SECRET_KEY
-        payload = request.data
+        data = request.data
         sig_header = request.headers['STRIPE_SIGNATURE']
 
         try:
             event = stripe.Webhook.construct_event(
-                payload, sig_header, endpoint_secret
+                data, sig_header, endpoint_secret
             )
         except ValueError as e:
-            # Invalid payload
+            # Invalid data
             raise e
         except stripe.error.SignatureVerificationError as e:
             # Invalid signature

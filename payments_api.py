@@ -426,11 +426,11 @@ class createEasyACHPaymentIntent(Resource):
     def put(self):
         print("In createEasyACHPaymentIntent PUT")
 
-        payload = request.get_json()
-        print(payload)
-        print(payload["session_id"])
+        data = request.get_json()
+        print(data)
+        print(data["session_id"])
 
-        businessId =str(payload["business_code"])
+        businessId =str(data["business_code"])
         print(businessId, type(businessId))
 
         keys = getCorrectKeys.post(self, businessId)
@@ -438,7 +438,7 @@ class createEasyACHPaymentIntent(Resource):
         stripe.api_key = keys["SECRET_KEY"]
         stripe.api_version = None
 
-        checkout_session = stripe.checkout.Session.retrieve(payload["session_id"])  
+        checkout_session = stripe.checkout.Session.retrieve(data["session_id"])  
         print(checkout_session)
         print(checkout_session.payment_intent)
 
