@@ -519,7 +519,7 @@ class createEasyACHPaymentIntent(Resource):
                         "price_data": {
                             "currency": "usd",
                             "unit_amount": charge_amount,
-                            "product_data": {"name": purchase_desc},
+                            "product_data": {"name": "Infinite Options"},
                         },
                         "quantity": 1,
                     },
