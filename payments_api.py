@@ -469,7 +469,7 @@ class createEasyACHPaymentIntent(Resource):
         customer_uid = data["customer_uid"]
         businessId = data["business_code"]
         charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
-        purchase_desc = data["description"]
+        # purchase_desc = data["description"]
         # print("customer: ", customer_uid)
         # print("business: ", businessId)
         # print("amount: ", charge_amount)
