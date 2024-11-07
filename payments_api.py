@@ -519,7 +519,7 @@ class createEasyACHPaymentIntent(Resource):
                         "price_data": {
                             "currency": "usd",
                             "unit_amount": charge_amount,
-                            "product_data": {"name": "Infinite Options"},
+                            "product_data": {"name": "Property Rent and Fees"},
                         },
                         "quantity": 1,
                     },
