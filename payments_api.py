@@ -469,6 +469,16 @@ class createEasyACHPaymentIntent(Resource):
         customer_uid = data["customer_uid"]
         businessId = data["business_code"]
         charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
+        site = data["site"]
+        if site == "LOCAL_PM":
+            pay_success="http://localhost:3000/PaymentConfirmation",
+            pay_fail="http://localhost:3000/tenantDashboard",
+        elif site == "PM":
+            pay_success="https://iopropertymanagement.netlify.app/PaymentConfirmation",
+            pay_fail="https://iopropertymanagement.netlify.app/tenantDashboard",
+        else:
+            pay_success="https://iopropertymanagement.netlify.app/PaymentConfirmation",
+            pay_fail="https://iopropertymanagement.netlify.app/tenantDashboard",
         # purchase_desc = data["description"]
         # print("customer: ", customer_uid)
         # print("business: ", businessId)
@@ -524,11 +534,9 @@ class createEasyACHPaymentIntent(Resource):
                         "quantity": 1,
                     },
                 ],
-                # success_url="https://iopropertymanagement.netlify.app/tenantDashboard",
-                success_url="https://iopropertymanagement.netlify.app/PaymentConfirmation",
-                # success_url="http://localhost:3000/PaymentConfirmation",
-                # cancel_url="https://www.cnn.com/",
-                cancel_url="https://iopropertymanagement.netlify.app/tenantDashboard",
+
+                success_url = pay_success,
+                cancel_url  = pay_fail,
 
             )
 
