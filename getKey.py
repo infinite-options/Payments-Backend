@@ -50,6 +50,12 @@ class getCorrectKeys(Resource):
         # elif businessId == "PMTEST":
         #     PUBLISHABLE_KEY = "pk_test_51LiLgbAdqquNNobLdqsqIFwoOeEHHPIreP9mTR96BxYlpNvEwKGqTgUoRvifGpr3xvk0UhQqYgW1Y5MPcyDl1xNh00aEzp41ro"
         #     SECRET_KEY = "sk_test_51LiLgbAdqquNNobLU7BiHIWUqfuDLXgYiYph8LmAb387UevA28B2YGOMFmhSNekAbz3yvI1XwKq8OIVK0ef75klh00Z38zfhYx"
+        # elif businessId == "EC":Add commentMore actions
+        #     PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_LIVE_PUBLISHABLE_KEY")
+        #     SECRET_KEY = os.environ.get("PM_STRIPE_LIVE_SECRET_KEY")
+        # elif businessId == "ECTEST":
+        #     PUBLISHABLE_KEY = "pk_test_51LiLgbAdqquNNobLdqsqIFwoOeEHHPIreP9mTR96BxYlpNvEwKGqTgUoRvifGpr3xvk0UhQqYgW1Y5MPcyDl1xNh00aEzp41ro"
+        #     SECRET_KEY = "sk_test_51LiLgbAdqquNNobLU7BiHIWUqfuDLXgYiYph8LmAb387UevA28B2YGOMFmhSNekAbz3yvI1XwKq8OIVK0ef75klh00Z38zfhYx"
         # elif businessId == "IOPAYMENT":
         #     PUBLISHABLE_KEY = "IOPAYMENTS_STRIPE_LIVE_PUBLISHABLE_KEY"
         #     SECRET_KEY = "IOPAYMENTS_STRIPE_LIVE_SECRET_KEY"
@@ -84,6 +90,12 @@ class getCorrectKeys(Resource):
             PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_LIVE_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("PM_STRIPE_LIVE_SECRET_KEY")
         elif businessId == "PMTEST":
+            PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_TEST_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("PM_STRIPE_TEST_SECRET_KEY")
+        elif businessId == "EC":
+            PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_LIVE_PUBLISHABLE_KEY")
+            SECRET_KEY = os.environ.get("PM_STRIPE_LIVE_SECRET_KEY")
+        elif businessId == "ECTEST":
             PUBLISHABLE_KEY = os.environ.get("PM_STRIPE_TEST_PUBLISHABLE_KEY")
             SECRET_KEY = os.environ.get("PM_STRIPE_TEST_SECRET_KEY")
         elif businessId == "IOPAYMENT":
