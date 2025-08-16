@@ -71,21 +71,36 @@ class SendEmail(Resource):
 
     # def get(self, message):
     def get(self, message, data):
-        print("\nIn SendEmail")
+        print("\nIn SendEmail Get")
         response = {}
         try:
             # conn = connect()
             # message = "test"
             # print("first email sent")
-            # print("Message to send: ", message)
+            print("Message to send: ", message)
             # print("Data to send: ", data, type(data))
 
 
             # Send email to Host            
             # Select appropriate Message Subject
-            if message[:31] == "New Customer created by Stripe!":
+            # if message[:31] == "New Customer created by Stripe!":
+            if "New Customer created by Stripe!" in message:
                 msg = Message(
                     "New Customer Created",
+                    sender="support@infiniteoptions.com",
+                    recipients=["pmarathay@gmail.com"],
+                )
+            # elif message[:31] == "No Customer ID sent":
+            elif "No Customer ID sent" in message:
+                msg = Message(
+                    "No Customer ID sent",
+                    sender="support@infiniteoptions.com",
+                    recipients=["pmarathay@gmail.com"],
+                )
+            # elif message[:31] == "Suspicious Charge Amount":
+            elif "Suspicious Charge Amount" in message:
+                msg = Message(
+                    "Suspicious Charge Amount",
                     sender="support@infiniteoptions.com",
                     recipients=["pmarathay@gmail.com"],
                 )
