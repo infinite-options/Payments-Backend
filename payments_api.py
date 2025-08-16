@@ -185,6 +185,9 @@ class createNewCustomer(Resource):
         # print("stripe sk: ", stripe.api_key)
         last4 = "No Key"
 
+        if not stripe.api_key:
+            raise ValueError("Stripe API key is missing or None.  Check your environment variables.")
+
         if len(stripe.api_key)>4:
             last4 = stripe.api_key[-4:]
 
@@ -262,15 +265,28 @@ class createPaymentIntent(Resource):
     def post(self):
 
         data = request.get_json(force=True)
-        # print("data: ", data)
+        print("data: ", data)
         customer_uid = data["customer_uid"]
         businessId = data["business_code"]
         charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
         # print("customer: ", customer_uid)
         # print("business: ", businessId)
-        # print("amount: ", charge_amount)
+        print("amount: ", charge_amount)
+
+
 
         print("\nIn Step 1")
+        if "nitya" in businessId.lower():
+            if not customer_uid.startswith("100"):
+                message = "No Customer ID sent"
+                SendEmail.get(self, message, data)
+                raise ValueError("Invalid customer_uid")
+            
+        if charge_amount <= 99 or charge_amount >= 1000000:
+            message = "Suspicious Charge Amount"
+            SendEmail.get(self, message, data)
+            raise ValueError(f"Suspicious Charge Amount: ${charge_amount/100:.2f}")
+        
         keys = getCorrectKeys.post(self, businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
 
@@ -471,14 +487,14 @@ class createEasyACHPaymentIntent(Resource):
         charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
         site = data["site"]
         if site == "LOCAL_PM":
-            pay_success="http://localhost:3000/PaymentConfirmation",
-            pay_fail="http://localhost:3000/tenantDashboard",
+            pay_success="http://localhost:3000/PaymentConfirmation"
+            pay_fail="http://localhost:3000/tenantDashboard"
         elif site == "PM":
-            pay_success="https://iopropertymanagement.netlify.app/PaymentConfirmation",
-            pay_fail="https://iopropertymanagement.netlify.app/tenantDashboard",
+            pay_success="https://iopropertymanagement.netlify.app/PaymentConfirmation"
+            pay_fail="https://iopropertymanagement.netlify.app/tenantDashboard"
         else:
-            pay_success="https://iopropertymanagement.netlify.app/PaymentConfirmation",
-            pay_fail="https://iopropertymanagement.netlify.app/tenantDashboard",
+            pay_success="https://iopropertymanagement.netlify.app/PaymentConfirmation"
+            pay_fail="https://iopropertymanagement.netlify.app/tenantDashboard"
         # purchase_desc = data["description"]
         # print("customer: ", customer_uid)
         # print("business: ", businessId)
