@@ -69,16 +69,20 @@ class SendEmail(Resource):
     def __call__(self):
         print("In SendEmail")
 
-    # def get(self, message):
-    def get(self, message, data):
-        print("\nIn SendEmail Get")
-        response = {}
+    @staticmethod
+    def send_email(message, data):
+        print("\nIn SendEmail send_email")
         try:
             # conn = connect()
             # message = "test"
             # print("first email sent")
             print("Message to send: ", message)
-            # print("Data to send: ", data, type(data))
+            print("Data to send: ", data, type(data))
+            print("Mail config - Username:", app.config['MAIL_USERNAME'])
+            print("Mail config - Server:", app.config["MAIL_SERVER"])
+            print("Mail config - Port:", app.config["MAIL_PORT"])
+            print("Mail config - SSL:", app.config["MAIL_USE_SSL"])
+            print("Mail config - TLS:", app.config["MAIL_USE_TLS"])
 
 
             # Send email to Host            
@@ -88,27 +92,31 @@ class SendEmail(Resource):
                 msg = Message(
                     "New Customer Created",
                     sender="support@infiniteoptions.com",
-                    recipients=["pmarathay@gmail.com"],
+                    recipients=["Lmarathay@gmail.com",
+                            "pmarathay@gmail.com"],
                 )
             # elif message[:31] == "No Customer ID sent":
             elif "No Customer ID sent" in message:
                 msg = Message(
                     "No Customer ID sent",
                     sender="support@infiniteoptions.com",
-                    recipients=["pmarathay@gmail.com"],
+                    recipients=["Lmarathay@gmail.com",
+                            "pmarathay@gmail.com"],
                 )
             # elif message[:31] == "Suspicious Charge Amount":
             elif "Suspicious Charge Amount" in message:
                 msg = Message(
                     "Suspicious Charge Amount",
                     sender="support@infiniteoptions.com",
-                    recipients=["pmarathay@gmail.com"],
+                    recipients=["Lmarathay@gmail.com",
+                            "pmarathay@gmail.com"],
                 )
             else:
                 msg = Message(
                     "Payment Error Occurred",
                     sender="support@infiniteoptions.com",
-                    recipients=["pmarathay@gmail.com"],
+                    recipients=["Lmarathay@gmail.com",
+                            "pmarathay@gmail.com"],
                 )
             # print(msg)
 
@@ -125,9 +133,12 @@ class SendEmail(Resource):
             )
 
             # "Thx - Nitya Ayurveda\n\n"
-            # print(msg)
-            # print('msg-bd----', msg.body)
+            print("About to send email...")
+            print("Email subject:", msg.subject)
+            print("Email recipients:", msg.recipients)
+            print("Email body:", msg.body)
             mail.send(msg)
+            print("Email sent successfully!")
             # print('\nafter mail send')
 
             # # Send email to Sender
@@ -153,9 +164,15 @@ class SendEmail(Resource):
 
             return 'Email Sent', 200
 
-        except:
-            print("Error Occurred - except block.  Email likely does not get sent in Local mode")
-            return 'Email NOT Sent.  Email will not be sent if in Local Mode'
+        except Exception as e:
+            print(f"Error sending email: {e}")
+            print(f"Error type: {type(e)}")
+            import traceback
+            print(f"Full traceback: {traceback.format_exc()}")
+            return 'Email NOT Sent', 500
+
+    def get(self, message, data):
+        return self.send_email(message, data)
 
 
 # STEP 1: Setup Stripe - Get the correct Keys
@@ -190,43 +207,51 @@ class createNewCustomer(Resource):
         print("In Call")
 
     def post(self, customer_uid):
-        # Customer UID sent in from frontend
-        print("Step 2 createNewCustomer")
-
-        # data = request.get_json(force=True)
-        # print("data: ", data)
-        # customerUid = data["customer_uid"]
-        # print("customer: ", customer_uid)
-        # print("stripe sk: ", stripe.api_key)
-        last4 = "No Key"
-
-        if not stripe.api_key:
-            raise ValueError("Stripe API key is missing or None.  Check your environment variables.")
-
-        if len(stripe.api_key)>4:
-            last4 = stripe.api_key[-4:]
-
-
-        # Check if Stripe does NOT already have the Customer UID
         try:
-            # IF Stripe has the UID then it cannot create another customer with same UID THEN try will fail
-            # IF it does NOT have the UID then it will create the customer
-            stripe.Customer.create(id=customer_uid)
-            print("New Customer ID created!", customer_uid)
-            newCustomer = True
-            # Send Email here
-            message = "New Customer created by Stripe! " + last4
-            SendEmail.get(self, message, customer_uid)
-        except:
-            # IF Stripe has the UID, it will retrieve the info and print it
-            print("Found Customer ID!")
-            stripe.Customer.retrieve(customer_uid)
-            # stripe.Customer.retrieve("cus_JKUnLFjlbjW2PG")
-            # print("Customer Info: ", stripe.Customer.retrieve(customer_uid))
-            newCustomer = False
+            # Customer UID sent in from frontend
+            print("Step 2 createNewCustomer")
 
-        return newCustomer
-        # return {"customer_uid": customer_uid, "newCustomer": newCustomer}
+            # data = request.get_json(force=True)
+            # print("data: ", data)
+            # customerUid = data["customer_uid"]
+            # print("customer: ", customer_uid)
+            # print("stripe sk: ", stripe.api_key)
+            last4 = "No Key"
+
+            if not stripe.api_key:
+                return {"error": "Stripe API key is missing or None. Check your environment variables."}, 500
+
+            if len(stripe.api_key)>4:
+                last4 = stripe.api_key[-4:]
+
+
+            # Check if Stripe does NOT already have the Customer UID
+            try:
+                # IF Stripe has the UID then it cannot create another customer with same UID THEN try will fail
+                # IF it does NOT have the UID then it will create the customer
+                stripe.Customer.create(id=customer_uid)
+                print("New Customer ID created!", customer_uid)
+                newCustomer = True
+                # Send Email here
+                message = "New Customer created by Stripe! " + last4
+                SendEmail.send_email(message, customer_uid)
+            except stripe.error.InvalidRequestError:
+                # IF Stripe has the UID, it will retrieve the info and print it
+                print("Found Customer ID!")
+                stripe.Customer.retrieve(customer_uid)
+                # stripe.Customer.retrieve("cus_JKUnLFjlbjW2PG")
+                # print("Customer Info: ", stripe.Customer.retrieve(customer_uid))
+                newCustomer = False
+            except Exception as e:
+                print(f"Unexpected error in customer creation/retrieval: {e}")
+                newCustomer = False
+
+            return newCustomer
+            # return {"customer_uid": customer_uid, "newCustomer": newCustomer}
+            
+        except Exception as e:
+            print(f"Error in createNewCustomer: {e}")
+            return {"error": "Failed to create/retrieve customer"}, 500
 
 # STEP 3: Create a Payment Intent
 class createPaymentIntentOnly(Resource):
@@ -278,60 +303,70 @@ class createPaymentIntentOnly(Resource):
 # STEP 1,2,3 COMBINED: Create a STRIPE Payment Intent
 class createPaymentIntent(Resource):
     def post(self):
+        try:
+            data = request.get_json(force=True)
+            print("data: ", data)
+            customer_uid = data["customer_uid"]
+            businessId = data["business_code"]
+            charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
+            # print("customer: ", customer_uid)
+            # print("business: ", businessId)
+            print("amount: ", charge_amount)
 
-        data = request.get_json(force=True)
-        print("data: ", data)
-        customer_uid = data["customer_uid"]
-        businessId = data["business_code"]
-        charge_amount = int(round(float(data["payment_summary"]["total"]) * 100))
-        # print("customer: ", customer_uid)
-        # print("business: ", businessId)
-        print("amount: ", charge_amount)
 
 
-
-        print("\nIn Step 1")
-        if "nitya" in businessId.lower():
-            if not customer_uid.startswith("100"):
-                message = "No Customer ID sent"
-                SendEmail.get(self, message, data)
-                raise ValueError("Invalid customer_uid")
+            print("\nIn Step 1")
+            # Check suspicious charge amount FIRST (before any early returns)
+            if charge_amount <= 99 or charge_amount >= 1000000:
+                message = "Suspicious Charge Amount"
+                SendEmail.send_email(message, data)
+                return {"error": f"Suspicious Charge Amount: ${charge_amount/100:.2f}"}, 400
             
-        if charge_amount <= 99 or charge_amount >= 1000000:
-            message = "Suspicious Charge Amount"
-            SendEmail.get(self, message, data)
-            raise ValueError(f"Suspicious Charge Amount: ${charge_amount/100:.2f}")
-        
-        keys = getCorrectKeys.post(self, businessId)
-        # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
+            # Then check customer ID validation
+            if "nitya" in businessId.lower():
+                if not customer_uid.startswith("100"):
+                    message = "No Customer ID sent"
+                    SendEmail.send_email(message, data)
+                    return {"error": "Invalid customer_uid"}, 400
+            
+            keys = getCorrectKeys.post(self, businessId)
+            # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
 
 
-        print("\nIn Step 2")
-        if customer_uid == "":
-            # Send email here
-            message = "No Customer ID sent"
-            SendEmail.get(self, message, data)
-            customer = stripe.Customer.create()
-            customer_uid = customer.id
-            print("Created New Customer ID: ", customer_uid)
+            print("\nIn Step 2")
+            if customer_uid == "":
+                # Send email here
+                message = "No Customer ID sent"
+                SendEmail.send_email(message, data)
+                customer = stripe.Customer.create()
+                customer_uid = customer.id
+                print("Created New Customer ID: ", customer_uid)
 
-        newCustomer = createNewCustomer.post(self, customer_uid)
-        # print(newCustomer)
-        print("customer_uid: ", customer_uid)
+            newCustomer = createNewCustomer.post(self, customer_uid)
+            # print(newCustomer)
+            print("customer_uid: ", customer_uid)
 
 
-        print("\nIn Step 3")
-        try: 
-            paymentIntent = createPaymentIntentOnly.post(self, customer_uid, charge_amount)
-            # print(paymentIntent)
-        except: 
-            # Send email here
-            message = "Payment Intent could not be created"
-            SendEmail.get(self, message, data)
-            print("Error Occurred")
-            paymentIntent = "Notify customer that system is down"
+            print("\nIn Step 3")
+            try: 
+                paymentIntent = createPaymentIntentOnly.post(self, customer_uid, charge_amount)
+                # print(paymentIntent)
+            except Exception as e: 
+                # Send email here
+                message = "Payment Intent could not be created"
+                SendEmail.send_email(message, data)
+                print(f"Error creating payment intent: {e}")
+                paymentIntent = "Notify customer that system is down"
 
-        return paymentIntent
+            return paymentIntent
+            
+        except ValueError as e:
+            # Handle ValueError specifically
+            return {"error": str(e)}, 400
+        except Exception as e:
+            # Handle any other unexpected errors
+            print(f"Unexpected error in createPaymentIntent: {e}")
+            return {"error": "Internal server error"}, 500
 
 
 # Step 4: Payment method with card and billing details entirely on the Front End
@@ -421,7 +456,7 @@ class createACHPaymentIntent(Resource):
         if customer_uid == "":
             # Send email here
             message = "No Customer ID sent"
-            SendEmail.get(self, message, data)
+            SendEmail.send_email(message, data)
             customer = stripe.Customer.create()
             customer_uid = customer.id
             print("Created New Customer ID: ", customer_uid)
@@ -530,7 +565,7 @@ class createEasyACHPaymentIntent(Resource):
         if customer_uid == "":
             # Send email here
             message = "No Customer ID sent"
-            SendEmail.get(self, message, data)
+            SendEmail.send_email(message, data)
             customer = stripe.Customer.create()
             customer_uid = customer.id
             print("Created New Customer ID: ", customer_uid)
@@ -813,7 +848,8 @@ api.add_resource(createOffSessionPaymentIntent, "/api/v2/createOffSessionPayment
 api.add_resource(refund, "/api/v2/refund")
 api.add_resource(customerList, "/api/v2/customerList/<string:businessId>")
 
-api.add_resource(SendEmail, "/api/v2/sendEmail/<string:message>,<string:data>")
+# Removed SendEmail endpoint for security - now using static method internally
+# api.add_resource(SendEmail, "/api/v2/sendEmail/<string:message>,<string:data>")
 
 api.add_resource(createACHPaymentIntent, "/api/v2/createACHPaymentIntent")
 api.add_resource(createEasyACHPaymentIntent, "/api/v2/createEasyACHPaymentIntent")
