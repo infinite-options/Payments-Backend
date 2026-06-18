@@ -9,9 +9,14 @@ Stripe Sample.
 Python 3.6 or newer required.
 """
 
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import stripe
 import json
-import os
 import requests
 import datetime
 
@@ -19,10 +24,9 @@ from flask import Flask, render_template, jsonify, request, send_from_directory,
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_mail import Mail, Message
-# from dotenv import load_dotenv, find_dotenv
 from email import message
 
-from getKey import getCorrectKeys
+from getKey import getCorrectKeys, stripeKey
 from ACH_payments import verifyACH, retrieve, status, webhook
 
 
@@ -189,9 +193,8 @@ class createCustomerOnly(Resource):
         # Create customer.  Need this step to save CC info
         # Returns a Customer ID Created by Stripe
         # print("Step 2 createCustomerOnly")
-        PUBLISHABLE_KEY = "pk_test_51J0UzOLGBFAvIBPFJbfSOn5SboZ4sX5TOrklg3o45EQywUNwxTameQVrEF9BZfmcU6WtkUFVQ2xvASNLC6tVLhdK00E1kJtmzH"
-        # print("stripe PUBLISHABLE_KEY: ", PUBLISHABLE_KEY)
-        SECRET_KEY = "sk_test_51J0UzOLGBFAvIBPFAm7Y5XGQ5APRxzzUeVJ1G1VdV010gW0bGzbDZsdM7fNeFDRs0WTenXV4Q9ANpztS7Y7ghtwb007quqRPZ3"
+        PUBLISHABLE_KEY = os.environ.get("NITYA_STRIPE_TEST_PUBLISHABLE_KEY")
+        SECRET_KEY = os.environ.get("NITYA_STRIPE_TEST_SECRET_KEY")
         stripe.api_key = SECRET_KEY
         # print("stripe sk: ", stripe.api_key)
         customer = stripe.Customer.create()
@@ -838,6 +841,7 @@ class customerList(Resource):
 # Define API routes
 # NEW BASE URL:  https://huo8rhh76i.execute-api.us-west-1.amazonaws.com/dev/
 api.add_resource(getCorrectKeys, "/api/v2/getCorrectKeys/<string:businessId>")
+api.add_resource(stripeKey, "/api/v2/stripe_key/<string:businessId>")
 api.add_resource(createNewCustomer, "/api/v2/createNewCustomer/<string:customer_uid>")
 api.add_resource(createCustomerOnly, "/api/v2/createCustomerOnly")
 api.add_resource(createPaymentIntent, "/api/v2/createPaymentIntent")
