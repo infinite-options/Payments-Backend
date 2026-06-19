@@ -14,8 +14,7 @@ from getKey import getCorrectKeys
 class verifyACH(Resource):
     def post(self):
         data = request.get_json(force=True)
-        SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
-        stripe.api_key = SECRET_KEY
+        stripe.api_key = os.environ.get("ACH_STRIPE_TEST_SECRET_KEY")
         customer_Uid = data["customer_uid"]
         pay_method = data["payment_method"]
         payment_intent_id = data["payment_intent_id"]
@@ -40,30 +39,14 @@ class retrieve(Resource):
             print("payment intent: ", payment_intent)
 
             print("\nIn Step 1")
-            keys = getCorrectKeys.post(self, businessId)
+            keys = getCorrectKeys().get_keys(businessId)
             # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
             stripe.api_key = keys["SECRET_KEY"]
             stripe.api_version = None
 
-
-            # SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
-            # stripe.api_key = SECRET_KEY
-
             res = stripe.PaymentIntent.retrieve(payment_intent,)
 
-            # res = stripe.PaymentIntent.retrieve(
-            #     "pi_3NmOlLFXblfqA49h27hZRIU3",
-            # )
-
             return res
-        
-    # def post(self):
-    #     SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
-    #     stripe.api_key = SECRET_KEY
-
-    #     return stripe.PaymentIntent.retrieve(
-    #         "pi_3Nn2ojFXblfqA49h0ilVv2g7",
-    #     )
 
 class status(Resource):
     def post(self):
@@ -78,20 +61,12 @@ class status(Resource):
         print("payment intent: ", payment_intent)
 
         print("\nIn Step 1")
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
         stripe.api_version = None
 
-
-        # SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
-        # stripe.api_key = SECRET_KEY
-
         res = stripe.PaymentIntent.retrieve(payment_intent,)
-
-        # res = stripe.PaymentIntent.retrieve(
-        #     "pi_3NmOlLFXblfqA49h27hZRIU3",
-        # )
 
         result = res["status"]
 
@@ -100,8 +75,8 @@ class status(Resource):
 class webhook(Resource):
     def post(self):
         event = None
-        SECRET_KEY = "sk_test_51NkKHkFXblfqA49hU9dmIuuuGAzNxnFusrLHWxwrQRxXLSJP0p0RGmL4SIhSltKqLOcRf81sV6z54HRIRQi8tO7r006CE4Tevp"
-        stripe.api_key = SECRET_KEY
+        stripe.api_key = os.environ.get("ACH_STRIPE_TEST_SECRET_KEY")
+        endpoint_secret = os.environ.get("ACH_STRIPE_WEBHOOK_SECRET")
         data = request.data
         sig_header = request.headers['STRIPE_SIGNATURE']
 

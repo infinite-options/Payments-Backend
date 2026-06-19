@@ -12,13 +12,31 @@ from flask_mail import Mail, Message
 from email import message
 
 
+def _obscure_key(key):
+    if not key:
+        return key
+    if len(key) <= 8:
+        return "****"
+    return f"{key[:12]}****{key[-4:]}"
+
+
 # STEP 1: Setup Stripe
 # Get the correct Keys
 class getCorrectKeys(Resource):
     def __call__(self):
         print("In Call")
 
+    def get_keys(self, businessId):
+        return self._load_keys(businessId)
+
     def post(self, businessId):
+        keys = self._load_keys(businessId)
+        return {
+            "PUBLISHABLE_KEY": keys["PUBLISHABLE_KEY"],
+            "SECRET_KEY": _obscure_key(keys["SECRET_KEY"]),
+        }
+
+    def _load_keys(self, businessId):
         # Business Code sent in as a parameter from frontend
         print("Step 1: Get Correct Keys")
         print("business: ", businessId)
@@ -78,5 +96,5 @@ class getCorrectKeys(Resource):
 
 class stripeKey(Resource):
     def get(self, businessId):
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         return {"publicKey": keys["PUBLISHABLE_KEY"]}

@@ -30,6 +30,9 @@ from getKey import getCorrectKeys, stripeKey
 from ACH_payments import verifyACH, retrieve, status, webhook
 
 
+print(f"-------------------- New Program Run ( Payments-Backend ) --------------------")
+
+
 app = Flask(__name__)
 # cors = CORS(app, resources={r'/api/*': {'origins': '*'}})
 CORS(app)
@@ -332,7 +335,7 @@ class createPaymentIntent(Resource):
                     SendEmail.send_email(message, data)
                     return {"error": "Invalid customer_uid"}, 400
             
-            keys = getCorrectKeys.post(self, businessId)
+            keys = getCorrectKeys().get_keys(businessId)
             # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
 
 
@@ -392,7 +395,7 @@ class createOffSessionPaymentIntent(Resource):
         # print("amount: ", charge_amount)
 
         print("\nIn Step 1")
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
         # print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
@@ -430,7 +433,7 @@ class createOffSessionPaymentIntent(Resource):
         return chargeId
 
 # STEP 1,2,3 COMBINED: Create a ACH Payment Intent
-endpoint_secret = 'whsec_ABNMy16Qg0QPNJUOn0e1iwKsQiupT1KA'
+endpoint_secret = os.environ.get("ACH_STRIPE_WEBHOOK_SECRET")
 
 class createACHPaymentIntent(Resource):
     def post(self):
@@ -447,7 +450,7 @@ class createACHPaymentIntent(Resource):
         # Step 1
         # Customer UID sent in from frontend
         print("\nIn Step 1")
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
         stripe.api_version = None
@@ -502,7 +505,7 @@ class createEasyACHPaymentIntent(Resource):
         businessId =str(data["business_code"])
         print(businessId, type(businessId))
 
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
         stripe.api_version = None
@@ -556,7 +559,7 @@ class createEasyACHPaymentIntent(Resource):
         # Step 1
         # Customer UID sent in from frontend
         print("\nIn Step 1")
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
         stripe.api_version = None
@@ -650,7 +653,7 @@ class retrieveStripeCharge(Resource):
         # print("amount: ", charge_amount)
 
         print("\nIn Step 1")
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
         # print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
@@ -700,7 +703,7 @@ class retrieveLast4(Resource):
         print("business: ", businessId)
 
         print("\nIn Step 1: Get Stripe Keys")
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
         # print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
@@ -737,7 +740,7 @@ class refund(Resource):
         # print("amount: ", charge_amount)
 
         print("\nIn Step 1")
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
         # print("stripe SECRET_KEY: ", keys["SECRET_KEY"])
         stripe.api_key = keys["SECRET_KEY"]
@@ -764,7 +767,7 @@ class customerList(Resource):
         print("Find Customer List Attributes")
 
         print("In Step 1")
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
 
         # customers = stripe.Customer.list(limit=100, email='pmarathay@yahoo.com')
@@ -784,7 +787,7 @@ class customerList(Resource):
         print("Find Entire Customer List")
 
         print("In Step 1")
-        keys = getCorrectKeys.post(self, businessId)
+        keys = getCorrectKeys().get_keys(businessId)
         # print("stripe PUBLISHABLE_KEY: ", keys["PUBLISHABLE_KEY"])
 
         # customers = stripe.Customer.list(limit=100, email='pmarathay@yahoo.com')
@@ -796,8 +799,6 @@ class customerList(Resource):
         # print(customers, type(customers))
         # print(customers["data"][0]["address"]["postal_code"])
         # print(customers["data"][0]["id"])
-    
-        # stripe.api_key = "sk_test_51HyqrgLMju5RPMEvow...JQ5TqpGkl299bo00yD1lTRNK"
 
 
         customers = stripe.Customer.list(limit=100)
